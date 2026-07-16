@@ -10,8 +10,14 @@
 - **React version:** React 19 (Server Components by default)
 - **Styling:** Tailwind CSS v4 
 - **Icons:** Lucide React
+- **Database:** Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
 
-## 3. Global UI/UX Identity
+## 3. Database & Backend Rules
+- **Manual Schema:** Supabase tables and schemas are managed manually by the user. Do NOT write SQL migrations or database creation scripts.
+- **Data Fetching/Mutations:** ALWAYS use Next.js Server Actions inside `src/actions/` for database interactions. 
+- **Client Components:** Never mix server-side Supabase calls inside client components.
+
+## 4. Global UI/UX Identity
 - **Global Background:** The main application background is strictly `#280242`.
 - **Global Text:** Default body text is plain white (`#FFFFFF`).
 - **Design Principles:** Premium, cinematic console interface. No standard SaaS dashboard visuals. Use tall, bottom-weighted cards (content aligned to the bottom) and glassmorphism (`bg-white/5`, `backdrop-blur-xl`) where applicable.
