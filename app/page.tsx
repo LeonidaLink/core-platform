@@ -10,6 +10,20 @@ export default function Home() {
   const [firstSectionHeading, setFirstSectionHeading] = useState("Trending");
 
   return (
+    <>
+      <style jsx global>{`
+        html {
+          scroll-behavior: smooth;
+        }
+        ::selection {
+          background: #D5ADF3;
+          color: #FFFFFF;
+        }
+        ::-moz-selection {
+          background: #D5ADF3;
+          color: #FFFFFF;
+        }
+      `}</style>
     <main className="min-h-screen bg-[#280242] text-white">
       {/* Header - Desktop Only */}
       <header className="fixed top-0 left-0 right-0 z-50 hidden md:flex items-center justify-between px-8 py-5 max-w-7xl mx-auto w-full">
@@ -84,7 +98,7 @@ export default function Home() {
           </p>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-[#C7E0F5] text-[#112A46] px-8 py-3.5 rounded-full font-extrabold text-base transition hover:scale-105 hover:shadow-lg hover:shadow-[#C7E0F5]/25"
+            className="bg-[#C7E0F5] hover:bg-[#A5C4D8] text-[#112A46] px-8 py-3.5 rounded-full font-extrabold text-base transition"
           >
             Join the Waitlist
           </button>
@@ -120,7 +134,7 @@ export default function Home() {
                 <p className="text-sm text-gray-400 mb-4 font-semibold">
                   Explore the Vice City map in 3d like you are using Apple Maps
                 </p>
-                <button className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105 hover:shadow-lg hover:shadow-[#C7E0F5]/25">
+                <button className="bg-[#C7E0F5] hover:bg-[#A5C4D8] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                   View Map
                 </button>
               </div>
@@ -141,7 +155,7 @@ export default function Home() {
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
                     Join the discussion and find your crew.
                   </p>
-                  <button className="bg-[#0DB9FF] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105 hover:shadow-lg hover:shadow-[#0DB9FF]/30">
+                  <button className="bg-[#0DB9FF] hover:bg-[#0A9BD4] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                     Enter Forums
                   </button>
                 </div>
@@ -159,7 +173,7 @@ export default function Home() {
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
                     Explore the ultimate database of Leonida lore.
                   </p>
-                  <button className="bg-[#545DB0] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105 hover:shadow-lg hover:shadow-[#545DB0]/30">
+                  <button className="bg-[#545DB0] hover:bg-[#434A8C] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                     Read Wiki
                   </button>
                 </div>
@@ -177,7 +191,7 @@ export default function Home() {
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
                     Level up your gameplay with essential utilities.
                   </p>
-                  <button className="bg-[#7969EE] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105 hover:shadow-lg hover:shadow-[#7969EE]/30">
+                  <button className="bg-[#7969EE] hover:bg-[#6154C0] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                     View Tools
                   </button>
                 </div>
@@ -205,7 +219,7 @@ export default function Home() {
             Connect with the community, discuss emerging theories, and organize your crew in a dedicated player-driven hub
           </p>
           <div className="flex items-center gap-4">
-            <button className="bg-[#C7E0F5] text-[#112A46] px-8 py-3.5 rounded-full font-extrabold text-base transition hover:scale-105 hover:shadow-lg hover:shadow-[#C7E0F5]/25">
+            <button className="bg-[#C7E0F5] hover:bg-[#A5C4D8] text-[#112A46] px-8 py-3.5 rounded-full font-extrabold text-base transition">
               Enter Forums
             </button>
             <button className="border border-white text-white px-8 py-3.5 rounded-full font-extrabold text-base transition hover:scale-105 hover:bg-white/10">
@@ -233,7 +247,7 @@ export default function Home() {
                     Breaking down all the leaked vehicle customization options for Jason.
                   </p>
                   <div className="flex items-center gap-3">
-                    <button className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105 hover:shadow-lg hover:shadow-[#C7E0F5]/25">
+                    <button className="bg-[#C7E0F5] hover:bg-[#A5C4D8] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                       View
                     </button>
                     <span className="text-white font-bold text-sm">213</span>
@@ -278,7 +292,7 @@ export default function Home() {
                       Discussing the new water physics and yacht mechanics from the trailer.
                     </p>
                     <div className="flex items-center justify-center gap-3">
-                      <button className="bg-white text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105">
+                      <button className="bg-white hover:bg-gray-200 text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                         Read
                       </button>
                       <span className="text-white font-bold text-sm">93</span>
@@ -299,7 +313,7 @@ export default function Home() {
                       Mapping out the confirmed nightclubs, bars, and late-night side activities.
                     </p>
                     <div className="flex items-center justify-center gap-3">
-                      <button className="bg-white text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105">
+                      <button className="bg-white hover:bg-gray-200 text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                         Read
                       </button>
                       <span className="text-white font-bold text-sm">42</span>
@@ -329,7 +343,7 @@ export default function Home() {
           <p className="text-lg text-white max-w-md mb-6 font-semibold leading-relaxed">
             The definitive encyclopedia of Leonida. Access comprehensive data grids for every character, vehicle, and weapon.
           </p>
-          <button className="bg-[#545DB0] text-white px-8 py-3.5 rounded-full font-extrabold text-base transition hover:scale-105 hover:shadow-lg hover:shadow-[#545DB0]/25">
+          <button className="bg-[#545DB0] hover:bg-[#434A8C] text-white px-8 py-3.5 rounded-full font-extrabold text-base transition">
             Read Wiki
           </button>
         </div>
@@ -352,7 +366,7 @@ export default function Home() {
                   <p className="text-sm text-gray-400 mb-4 font-semibold">
                     Deep dive into Jason and Lucia&#39;s backstories, unique abilities, and starting loadouts.
                   </p>
-                  <button className="bg-[#F3C934] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105 hover:shadow-lg hover:shadow-[#F3C934]/25">
+                  <button className="bg-[#F3C934] hover:bg-[#C4A32A] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                     Read Lore
                   </button>
                 </div>
@@ -373,7 +387,7 @@ export default function Home() {
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
                     Compare damage drop-offs, fire rates, and recoil patterns for every confirmed firearm.
                   </p>
-                  <button className="bg-[#3B3B3B] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105">
+                  <button className="bg-[#3B3B3B] hover:bg-[#2A2A2A] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                     View Stats
                   </button>
                 </div>
@@ -391,7 +405,7 @@ export default function Home() {
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
                     Top speeds, handling grades, and full customization costs for Leonida&#39;s rides.
                     </p>
-                    <button className="bg-[#E2A7A0] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105">
+                    <button className="bg-[#E2A7A0] hover:bg-[#B5867F] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                       Browse Vehicles
                     </button>
                   </div>
@@ -409,7 +423,7 @@ export default function Home() {
                     <p className="text-sm text-gray-300 mb-4 font-semibold">
                       Track locations, purchase prices, and garage capacities for every property in the game.
                     </p>
-                    <button className="bg-[#60B3E9] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105">
+                    <button className="bg-[#60B3E9] hover:bg-[#4D8FB8] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                       View Properties
                     </button>
                   </div>
@@ -437,7 +451,7 @@ export default function Home() {
           <p className="text-lg text-white max-w-md mb-6 font-semibold leading-relaxed">
             Maximize your gameplay with our minimalist 3D track names, interactive checklists, and progression tools.
           </p>
-          <button className="bg-[#7969EE] text-white px-8 py-3.5 rounded-full font-extrabold text-base transition hover:scale-105 hover:shadow-lg hover:shadow-[#7969EE]/25">
+          <button className="bg-[#7969EE] hover:bg-[#6154C0] text-white px-8 py-3.5 rounded-full font-extrabold text-base transition">
             View Tools
           </button>
         </div>
@@ -481,7 +495,7 @@ export default function Home() {
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
                     Never miss a collectible. Log your progress across missions, random events, and achievements.
                     </p>
-                    <button className="bg-[#757F6E] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105">
+                    <button className="bg-[#757F6E] hover:bg-[#5E6660] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                       Start Tracking
                     </button>
                   </div>
@@ -499,7 +513,7 @@ export default function Home() {
                     <p className="text-sm text-gray-300 mb-4 font-semibold">
                       Optimize your inventory. Calculate damage thresholds, weapon costs, and handling stats.
                     </p>
-                    <button className="bg-[#424345] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105">
+                    <button className="bg-[#424345] hover:bg-[#323335] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                       Build Loadout
                     </button>
                   </div>
@@ -517,7 +531,7 @@ export default function Home() {
                     <p className="text-sm text-gray-300 mb-4 font-semibold">
                       Interactive to-do lists. Track side activities and set custom goals for your playthrough.
                     </p>
-                    <button className="bg-[#A6A7A1] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105">
+                    <button className="bg-[#A6A7A1] hover:bg-[#858681] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
                       View Checklists
                     </button>
                   </div>
@@ -583,5 +597,6 @@ export default function Home() {
         </div>
       </footer>
     </main>
+    </>
   );
 }
