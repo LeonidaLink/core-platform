@@ -130,7 +130,7 @@ export default function Home() {
           {/* Explore Leonida - 2/3 width */}
           <div className="flex flex-row md:grid md:col-span-3 md:grid-cols-3 gap-4 md:gap-6 w-max md:w-full shrink-0">
               {/* Forum Card */}
-              <div className="h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
+              <div className="w-[280px] md:w-full md:col-span-1 shrink-0 snap-center h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
                 <img
                   src="/images/forum-card.png"
                   alt="Forum"
@@ -148,7 +148,7 @@ export default function Home() {
               </div>
 
               {/* Wiki Card */}
-              <div className="h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
+              <div className="w-[280px] md:w-full md:col-span-1 shrink-0 snap-center h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
                 <img
                   src="/images/wiki-card.png"
                   alt="Wiki"
@@ -166,7 +166,7 @@ export default function Home() {
               </div>
 
               {/* Tools Card */}
-              <div className="h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
+              <div className="w-[280px] md:w-full md:col-span-1 shrink-0 snap-center h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
                 <img
                   src="/images/tools-card.png"
                   alt="Tools"
@@ -539,7 +539,7 @@ export default function Home() {
               {/* Reusing the logo header styling logic */}
              <img src="/images/hero-title.png" alt="Leonida Link" className="h-12" />
             </div>
-            <p className="text-white/60 text-sm leading-relaxed">
+            <p className="text-white/60 text-sm font-semibold leading-relaxed">
               The all-in-one GTA 6 wiki, tracker, and forum. Made by players for players. Not affiliated with Rockstar Games.
             </p>
           </div>
@@ -547,32 +547,32 @@ export default function Home() {
           {/* Column 2: Explore */}
           <div className="flex flex-col gap-3">
             <h4 className="text-white font-bold text-lg mb-2">Explore</h4>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">Interactive Map</a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">Wiki Database</a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">Community Forum</a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">Loadout Calculator</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Interactive Map</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Wiki Database</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Community Forum</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Loadout Calculator</a>
           </div>
 
           {/* Column 3: Community */}
           <div className="flex flex-col gap-3">
             <h4 className="text-white font-bold text-lg mb-2">Community</h4>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">Discord Server</a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">Twitter / X</a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">YouTube</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Discord Server</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Twitter / X</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">YouTube</a>
           </div>
 
           {/* Column 4: Legal */}
           <div className="flex flex-col gap-3">
             <h4 className="text-white font-bold text-lg mb-2">Legal</h4>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">Privacy Policy</a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">Terms of Service</a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm">Forum Rules</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Privacy Policy</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Terms of Service</a>
+            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Forum Rules</a>
           </div>
         </div>
 
         {/* Bottom Bar: Copyright & Socials */}
         <div className="max-w-7xl mx-auto pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-white/40 text-xs text-center md:text-left">
+          <p className="text-white/40 text-xs text-center font-semibold md:text-left">
             © 2026 Leonida Link. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
