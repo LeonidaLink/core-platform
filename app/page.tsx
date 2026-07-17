@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { User } from "lucide-react";
+import { User, Menu, X, ChevronRight } from "lucide-react";
 import WaitlistModal from "@/app/components/WaitlistModal";
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [firstSectionHeading, setFirstSectionHeading] = useState("Trending");
 
   return (
     <main className="min-h-screen bg-[#280242] text-white">
@@ -29,6 +31,41 @@ export default function Home() {
           </button>
         </div>
       </header>
+
+      {/* Mobile Header */}
+      <header className="fixed top-0 left-0 right-0 z-[90] flex md:hidden items-center justify-between w-full px-6 py-4 bg-[#280242]">
+        <button onClick={() => setIsMenuOpen(true)} className="w-10 h-10 flex items-center justify-center text-white">
+          <Menu size={24} />
+        </button>
+        <img src="/brand/logo.png" alt="Leonida Link" className="h-10" />
+        <button className="w-10 h-10 flex items-center justify-center text-white/70">
+          <User size={20} />
+        </button>
+      </header>
+
+      {/* Fullscreen Mobile Menu */}
+      <div className={`fixed inset-0 z-[100] bg-[#280242] flex flex-col p-6 transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        <div className="flex justify-end">
+          <button onClick={() => setIsMenuOpen(false)} className="w-12 h-12 flex items-center justify-center text-white">
+            <X size={28} />
+          </button>
+        </div>
+        <nav className="flex-1 flex flex-col justify-center space-y-6">
+          <a href="#" className="flex items-center justify-between text-4xl font-black text-white">
+            Forum <ChevronRight size={32} />
+          </a>
+          <a href="#" className="flex items-center justify-between text-4xl font-black text-white">
+            Wiki <ChevronRight size={32} />
+          </a>
+          <a href="#" className="flex items-center justify-between text-4xl font-black text-white">
+            Tools <ChevronRight size={32} />
+          </a>
+        </nav>
+        <a href="https://discord.gg/Xc7mejjReX" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 border border-white/60 hover:border-white hover:bg-white/10 px-8 py-4 rounded-full text-lg font-extrabold transition bg-transparent mt-8">
+          <img src="/brand/discord.png" alt="Discord" className="h-6 w-6" />
+          Join Discord
+        </a>
+      </div>
 
       {/* Hero Section */}
       <section className="relative w-full h-[85vh] flex flex-col justify-end overflow-hidden">
@@ -56,10 +93,17 @@ export default function Home() {
 
       {/* Card Section Grid */}
       <section className="px-8 py-12 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Mobile dynamic heading */}
+        <h3 className="block md:hidden text-3xl font-black tracking-tight mb-6">{firstSectionHeading}</h3>
+
+        {/* Combined slider wrapper for mobile */}
+        <div
+          onScroll={(e) => setFirstSectionHeading(e.currentTarget.scrollLeft > 250 ? "Explore Leonida" : "Trending")}
+          className="flex md:grid overflow-x-auto snap-x snap-mandatory scroll-smooth space-x-4 md:space-x-0 md:grid-cols-3 gap-6 pb-4 md:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
           {/* Trending Card - wider */}
-          <div className="md:col-span-1">
-            <h3 className="text-4xl font-black tracking-tight mb-6">Trending</h3>
+          <div className="w-[85vw] md:w-auto shrink-0 snap-start md:col-span-1">
+            <h3 className="hidden md:block text-4xl font-black tracking-tight mb-6">Trending</h3>
             <div className="h-[420px] rounded-2xl bg-[#1E0032] flex flex-col overflow-hidden">
               <img
                 src="/images/map-card.png"
@@ -79,8 +123,8 @@ export default function Home() {
           </div>
 
           {/* Explore Leonida - 2/3 width */}
-          <div className="md:col-span-2">
-            <h3 className="text-4xl font-black tracking-tight mb-6">Explore Leonida</h3>
+          <div className="w-[85vw] md:w-auto shrink-0 snap-start md:col-span-2">
+            <h3 className="hidden md:block text-4xl font-black tracking-tight mb-6">Explore Leonida</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Forum Card */}
               <div className="h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
@@ -154,7 +198,7 @@ export default function Home() {
 
         {/* Forum Header Content */}
         <div className="relative z-10 px-8 max-w-7xl mx-auto w-full pt-134 pb-12">
-          <h2 className="text-7xl font-black tracking-tight text-white mb-4">Forum</h2>
+          <h2 className="text-4xl md:text-7xl font-black tracking-tight text-white mb-4">Forum</h2>
           <p className="text-lg text-white max-w-md mb-6 font-semibold leading-relaxed">
             Connect with the community, discuss emerging theories, and organize your crew in a dedicated player-driven hub
           </p>
@@ -170,11 +214,11 @@ export default function Home() {
 
         {/* Trending Topics */}
         <div className="relative z-10 px-8 max-w-7xl mx-auto w-full pb-16">
-          <h3 className="text-4xl font-black tracking-tight text-white mb-6">Trending Topics</h3>
+          <h3 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-6">Trending Topics</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex md:grid overflow-x-auto snap-x snap-mandatory scroll-smooth space-x-4 md:space-x-0 md:grid-cols-3 gap-6 pb-4 md:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {/* Card 1 - Jason Vehicles (Trending style) */}
-            <div className="md:col-span-1">
+            <div className="w-[85vw] md:w-auto shrink-0 snap-start md:col-span-1">
               <div className="h-[420px] rounded-2xl bg-[#0A5ABB] flex flex-col overflow-hidden">
                 <img
                   src="/images/jason-vehicles.png"
@@ -197,7 +241,7 @@ export default function Home() {
             </div>
 
             {/* Cards 2-4 wrapper (Explore Leonida style) */}
-            <div className="md:col-span-2">
+            <div className="w-[85vw] md:w-auto shrink-0 snap-start md:col-span-2">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Card 2 - Vice City Car Meets */}
                 <div className="h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
@@ -274,7 +318,7 @@ export default function Home() {
 
         {/* Wiki Header Content */}
         <div className="relative z-10 px-8 max-w-7xl mx-auto w-full pt-120 pb-6">
-          <h2 className="text-7xl font-black tracking-tight text-white mb-4">Wiki</h2>
+          <h2 className="text-4xl md:text-7xl font-black tracking-tight text-white mb-4">Wiki</h2>
           <p className="text-lg text-white max-w-md mb-6 font-semibold leading-relaxed">
             The definitive encyclopedia of Leonida. Access comprehensive data grids for every character, vehicle, and weapon.
           </p>
@@ -285,11 +329,11 @@ export default function Home() {
 
         {/* Trending Wikis */}
         <div className="relative z-10 px-8 max-w-7xl mx-auto w-full pb-16">
-          <h3 className="text-4xl font-black tracking-tight text-white mb-6">Trending Wikis</h3>
+          <h3 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-6">Trending Wikis</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex md:grid overflow-x-auto snap-x snap-mandatory scroll-smooth space-x-4 md:space-x-0 md:grid-cols-3 gap-6 pb-4 md:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {/* Card 1 - Protagonist Bios (Trending style) */}
-            <div className="md:col-span-1">
+            <div className="w-[85vw] md:w-auto shrink-0 snap-start md:col-span-1">
               <div className="h-[420px] rounded-2xl bg-[#321F20] flex flex-col overflow-hidden">
                 <img
                   src="/images/protagonist-bios.png"
@@ -309,7 +353,7 @@ export default function Home() {
             </div>
 
             {/* Cards 2-4 wrapper (Explore style) */}
-            <div className="md:col-span-2">
+            <div className="w-[85vw] md:w-auto shrink-0 snap-start md:col-span-2">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Card 2 - Weapon Telemetry */}
                 <div className="h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
@@ -377,7 +421,7 @@ export default function Home() {
 
         {/* Tools Header Content */}
         <div className="relative z-10 px-8 max-w-7xl mx-auto w-full pt-120 pb-6">
-          <h2 className="text-7xl font-black tracking-tight text-white mb-4">Tools</h2>
+          <h2 className="text-4xl md:text-7xl font-black tracking-tight text-white mb-4">Tools</h2>
           <p className="text-lg text-white max-w-md mb-6 font-semibold leading-relaxed">
             Maximize your gameplay with our minimalist 3D track names, interactive checklists, and progression tools.
           </p>
@@ -388,11 +432,11 @@ export default function Home() {
 
         {/* Trending Pages */}
         <div className="relative z-10 px-8 max-w-7xl mx-auto w-full pb-16">
-          <h3 className="text-4xl font-black tracking-tight text-white mb-6">Trending Pages</h3>
+          <h3 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-6">Trending Pages</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex md:grid overflow-x-auto snap-x snap-mandatory scroll-smooth space-x-4 md:space-x-0 md:grid-cols-3 gap-6 pb-4 md:pb-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {/* Card 1 - Vice City 3D Map (Trending style) */}
-            <div className="md:col-span-1">
+            <div className="w-[85vw] md:w-auto shrink-0 snap-start md:col-span-1">
               <div className="h-[420px] rounded-2xl bg-[#1E0032] flex flex-col overflow-hidden">
                 <img
                   src="/images/map-card.png"
@@ -412,7 +456,7 @@ export default function Home() {
             </div>
 
             {/* Cards 2-4 wrapper (Explore style) */}
-            <div className="md:col-span-2">
+            <div className="w-[85vw] md:w-auto shrink-0 snap-start md:col-span-2">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Card 2 - Completion Tracker */}
                 <div className="h-[420px] rounded-2xl overflow-hidden relative flex flex-col justify-end">
