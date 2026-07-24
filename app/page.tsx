@@ -30,13 +30,13 @@ export default function Home() {
         <img src="/brand/logo.png" alt="Leonida Link" className="h-12" />
 
         <nav className="absolute left-1/2 -translate-x-1/2 flex space-x-10 text-sm font-extrabold uppercase tracking-widest text-white">
-          <a href="#" className="px-4 py-2 rounded-full border border-transparent hover:border-white/60 transition-all duration-300">Forum</a>
-          <a href="#" className="px-4 py-2 rounded-full border border-transparent hover:border-white/60 transition-all duration-300">Wiki</a>
-          <a href="#" className="px-4 py-2 rounded-full border border-transparent hover:border-white/60 transition-all duration-300">Tools</a>
+          <a href="#forum" className="px-4 py-2 rounded-full border border-transparent hover:border-white/60 transition-all duration-300">Forum</a>
+          <a href="#wiki" className="px-4 py-2 rounded-full border border-transparent hover:border-white/60 transition-all duration-300">Wiki</a>
+          <a href="#tools" className="px-4 py-2 rounded-full border border-transparent hover:border-white/60 transition-all duration-300">Tools</a>
         </nav>
 
         <div className="flex items-center space-x-4">
-          <a href="https://discord.gg/Xc7mejjReX" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 border border-white/60 hover:border-white hover:bg-white/10 px-5 py-2.5 rounded-full text-sm font-extrabold transition bg-transparent">
+          <a href="https://discord.gg/jADA5xeBZX" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 border border-white/60 hover:border-white hover:bg-white/10 px-5 py-2.5 rounded-full text-sm font-extrabold transition bg-transparent">
             <img src="/brand/discord.png" alt="Discord" className="h-5 w-5" />
             Join Discord
           </a>
@@ -58,27 +58,43 @@ export default function Home() {
       </header>
 
       {/* Fullscreen Mobile Menu */}
-      <div className={`fixed inset-0 z-[100] bg-[#280242] flex flex-col p-6 transition-transform duration-300 ${isMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
-        <div className="flex justify-end">
-          <button onClick={() => setIsMenuOpen(false)} className="w-12 h-12 flex items-center justify-center text-white">
-            <X size={28} />
-          </button>
+      <div className={`fixed inset-0 z-[100] bg-[#280242] flex flex-col p-6 transition-transform duration-300 overflow-hidden ${isMenuOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-20 -right-20 w-72 h-72 bg-[#7969EE]/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-32 -left-20 w-80 h-80 bg-[#C7E0F5]/5 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 right-0 w-48 h-48 bg-[#D5ADF3]/8 rounded-full blur-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#280242] to-[#1E0032]/80" />
         </div>
-        <nav className="flex-1 flex flex-col justify-center space-y-6">
-          <a href="#" className="flex items-center justify-between text-4xl font-black text-white">
-            Forum <ChevronRight size={32} />
-          </a>
-          <a href="#" className="flex items-center justify-between text-4xl font-black text-white">
-            Wiki <ChevronRight size={32} />
-          </a>
-          <a href="#" className="flex items-center justify-between text-4xl font-black text-white">
-            Tools <ChevronRight size={32} />
-          </a>
-        </nav>
-        <a href="https://discord.gg/Xc7mejjReX" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 border border-white/60 hover:border-white hover:bg-white/10 px-8 py-4 rounded-full text-lg font-extrabold transition bg-transparent mt-8">
-          <img src="/brand/discord.png" alt="Discord" className="h-6 w-6" />
-          Join Discord
-        </a>
+
+        <div className="relative z-10 flex flex-col h-full">
+          <div className="flex items-center justify-between">
+            <img src="/brand/logo.png" alt="Leonida Link" className="h-9 opacity-80" />
+            <button onClick={() => setIsMenuOpen(false)} className="w-12 h-12 flex items-center justify-center text-white/70 hover:text-white transition">
+              <X size={28} />
+            </button>
+          </div>
+
+          <nav className="flex-1 flex flex-col justify-center space-y-8">
+            <a href="#forum" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-between text-4xl font-black text-white border-b border-white/5 pb-6">
+              Forum <ChevronRight size={28} className="text-white/30" />
+            </a>
+            <a href="#wiki" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-between text-4xl font-black text-white border-b border-white/5 pb-6">
+              Wiki <ChevronRight size={28} className="text-white/30" />
+            </a>
+            <a href="#tools" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-between text-4xl font-black text-white">
+              Tools <ChevronRight size={28} className="text-white/30" />
+            </a>
+          </nav>
+
+          <div className="space-y-4 pb-4">
+            <a href="https://discord.gg/Xc7mejjReX" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 border border-white/60 hover:border-white hover:bg-white/10 px-8 py-4 rounded-full text-lg font-extrabold transition bg-transparent">
+              <img src="/brand/discord.png" alt="Discord" className="h-6 w-6" />
+              Join Discord
+            </a>
+            <p className="text-white/30 text-xs text-center font-semibold">© 2026 Leonida Link</p>
+          </div>
+        </div>
       </div>
 
       {/* Hero Section */}
@@ -134,8 +150,8 @@ export default function Home() {
                 <p className="text-sm text-gray-400 mb-4 font-semibold">
                   Explore the Vice City map in 3d like you are using Apple Maps
                 </p>
-                <button className="bg-[#C7E0F5] hover:bg-[#A5C4D8] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                  View Map
+                <button className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                  Coming Soon
                 </button>
               </div>
             </div>
@@ -153,10 +169,10 @@ export default function Home() {
                 <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                   <h4 className="font-black text-xl mb-1">Forum</h4>
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
-                    Join the discussion and find your crew.
+                    This feature is under development. Stay tuned.
                   </p>
-                  <button className="bg-[#0DB9FF] hover:bg-[#0A9BD4] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                    Enter Forums
+                  <button className="bg-[#0DB9FF] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                    Coming Soon
                   </button>
                 </div>
               </div>
@@ -171,10 +187,10 @@ export default function Home() {
                 <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                   <h4 className="font-black text-xl mb-1">Wiki</h4>
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
-                    Explore the ultimate database of Leonida lore.
+                    This feature is under development. Stay tuned.
                   </p>
-                  <button className="bg-[#545DB0] hover:bg-[#434A8C] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                    Read Wiki
+                  <button className="bg-[#545DB0] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                    Coming Soon
                   </button>
                 </div>
               </div>
@@ -189,10 +205,10 @@ export default function Home() {
                 <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                   <h4 className="font-black text-xl mb-1">Tools</h4>
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
-                    Level up your gameplay with essential utilities.
+                    This feature is under development. Stay tuned.
                   </p>
-                  <button className="bg-[#7969EE] hover:bg-[#6154C0] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                    View Tools
+                  <button className="bg-[#7969EE] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                    Coming Soon
                   </button>
                 </div>
               </div>
@@ -201,7 +217,7 @@ export default function Home() {
       </section>
 
       {/* Forum Section */}
-      <section className="relative w-full bg-[#80D0F1] overflow-hidden">
+      <section id="forum" className="relative w-full bg-[#80D0F1] overflow-hidden scroll-mt-0">
         {/* Background Image - covers upper portion */}
         <div className="absolute inset-0 w-full h-[70%]">
           <img
@@ -219,10 +235,10 @@ export default function Home() {
             Connect with the community, discuss emerging theories, and organize your crew in a dedicated player-driven hub
           </p>
           <div className="flex items-center gap-4">
-            <button className="bg-[#C7E0F5] hover:bg-[#A5C4D8] text-[#112A46] px-8 py-3.5 rounded-full font-extrabold text-base transition">
-              Enter Forums
+            <button className="bg-[#C7E0F5] text-[#112A46] px-8 py-3.5 rounded-full font-extrabold text-base transition opacity-60 cursor-not-allowed pointer-events-none">
+              Coming Soon
             </button>
-            <button className="border border-white text-white px-8 py-3.5 rounded-full font-extrabold text-base transition hover:scale-105 hover:bg-white/10">
+            <button className="border border-white text-white px-8 py-3.5 rounded-full font-extrabold text-base transition opacity-60 cursor-not-allowed pointer-events-none">
               Rules
             </button>
           </div>
@@ -244,13 +260,12 @@ export default function Home() {
                 <div className="p-5 flex flex-col justify-end flex-1">
                   <h4 className="font-black text-xl mb-1">Jason Vehicles</h4>
                   <p className="text-sm text-[#EAE7E7] mb-4 font-semibold">
-                    Breaking down all the leaked vehicle customization options for Jason.
+                    This feature is under development. Stay tuned.
                   </p>
                   <div className="flex items-center gap-3">
-                    <button className="bg-[#C7E0F5] hover:bg-[#A5C4D8] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                      View
+                    <button className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                      Coming Soon
                     </button>
-                    <span className="text-white font-bold text-sm">213</span>
                   </div>
                 </div>
               </div>
@@ -268,13 +283,12 @@ export default function Home() {
                 <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                   <h4 className="font-black text-xl mb-1">Vice City Car Meets</h4>
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
-                    Where are the best neon-lit spots in Leonida to host underground meets?
+                    This feature is under development. Stay tuned.
                   </p>
                   <div className="flex items-center justify-center gap-3">
-                    <button className="bg-white text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105">
-                      Read
+                    <button className="bg-white text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                      Coming Soon
                     </button>
-                      <span className="text-white font-bold text-sm">101</span>
                     </div>
                   </div>
                 </div>
@@ -289,13 +303,12 @@ export default function Home() {
                   <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                     <h4 className="font-black text-xl mb-1">Boat Parties</h4>
                     <p className="text-sm text-gray-300 mb-4 font-semibold">
-                      Discussing the new water physics and yacht mechanics from the trailer.
+                      This feature is under development. Stay tuned.
                     </p>
                     <div className="flex items-center justify-center gap-3">
-                      <button className="bg-white hover:bg-gray-200 text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                        Read
+                      <button className="bg-white text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                        Coming Soon
                       </button>
-                      <span className="text-white font-bold text-sm">93</span>
                     </div>
                   </div>
                 </div>
@@ -310,13 +323,12 @@ export default function Home() {
                   <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                     <h4 className="font-black text-xl mb-1">Night Activities</h4>
                     <p className="text-sm text-gray-300 mb-4 font-semibold">
-                      Mapping out the confirmed nightclubs, bars, and late-night side activities.
+                      This feature is under development. Stay tuned.
                     </p>
                     <div className="flex items-center justify-center gap-3">
-                      <button className="bg-white hover:bg-gray-200 text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                        Read
+                      <button className="bg-white text-black w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                        Coming Soon
                       </button>
-                      <span className="text-white font-bold text-sm">42</span>
                     </div>
                   </div>
                 </div>
@@ -326,7 +338,7 @@ export default function Home() {
       </section>
 
       {/* Wiki Section */}
-      <section className="relative w-full bg-[#FDAA76] overflow-hidden">
+      <section id="wiki" className="relative w-full bg-[#FDAA76] overflow-hidden scroll-mt-0">
         {/* Background Image - covers upper portion */}
         <div className="absolute inset-0 w-full h-[70%]">
           <img
@@ -343,8 +355,8 @@ export default function Home() {
           <p className="text-lg text-white max-w-md mb-6 font-semibold leading-relaxed">
             The definitive encyclopedia of Leonida. Access comprehensive data grids for every character, vehicle, and weapon.
           </p>
-          <button className="bg-[#545DB0] hover:bg-[#434A8C] text-white px-8 py-3.5 rounded-full font-extrabold text-base transition">
-            Read Wiki
+          <button className="bg-[#545DB0] text-white px-8 py-3.5 rounded-full font-extrabold text-base transition opacity-60 cursor-not-allowed pointer-events-none">
+            Coming Soon
           </button>
         </div>
 
@@ -364,10 +376,10 @@ export default function Home() {
                 <div className="p-5 flex flex-col justify-end flex-1">
                   <h4 className="font-black text-xl mb-1 text-white">Protagonist Bios</h4>
                   <p className="text-sm text-gray-400 mb-4 font-semibold">
-                    Deep dive into Jason and Lucia&#39;s backstories, unique abilities, and starting loadouts.
+                    This feature is under development. Stay tuned.
                   </p>
-                  <button className="bg-[#F3C934] hover:bg-[#C4A32A] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                    Read Lore
+                  <button className="bg-[#F3C934] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                    Coming Soon
                   </button>
                 </div>
               </div>
@@ -385,10 +397,10 @@ export default function Home() {
                 <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                   <h4 className="font-black text-xl mb-1 text-white">Weapon Telemetry</h4>
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
-                    Compare damage drop-offs, fire rates, and recoil patterns for every confirmed firearm.
+                    This feature is under development. Stay tuned.
                   </p>
-                  <button className="bg-[#3B3B3B] hover:bg-[#2A2A2A] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                    View Stats
+                  <button className="bg-[#3B3B3B] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                    Coming Soon
                   </button>
                 </div>
               </div>
@@ -403,10 +415,10 @@ export default function Home() {
                 <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                   <h4 className="font-black text-xl mb-1 text-white">Vehicle Database</h4>
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
-                    Top speeds, handling grades, and full customization costs for Leonida&#39;s rides.
+                    This feature is under development. Stay tuned.
                     </p>
-                    <button className="bg-[#E2A7A0] hover:bg-[#B5867F] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                      Browse Vehicles
+                    <button className="bg-[#E2A7A0] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                      Coming Soon
                     </button>
                   </div>
                 </div>
@@ -421,10 +433,10 @@ export default function Home() {
                   <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                     <h4 className="font-black text-xl mb-1 text-white">Real Estate & Safehouses</h4>
                     <p className="text-sm text-gray-300 mb-4 font-semibold">
-                      Track locations, purchase prices, and garage capacities for every property in the game.
+                      This feature is under development. Stay tuned.
                     </p>
-                    <button className="bg-[#60B3E9] hover:bg-[#4D8FB8] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                      View Properties
+                    <button className="bg-[#60B3E9] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                      Coming Soon
                     </button>
                   </div>
                 </div>
@@ -434,7 +446,7 @@ export default function Home() {
       </section>
 
       {/* Tools Section */}
-      <section className="relative w-full bg-[#505D78] overflow-hidden">
+      <section id="tools" className="relative w-full bg-[#505D78] overflow-hidden scroll-mt-0">
         {/* Background Image - covers upper portion */}
         <div className="absolute inset-0 w-full h-[70%]">
           <img
@@ -451,8 +463,8 @@ export default function Home() {
           <p className="text-lg text-white max-w-md mb-6 font-semibold leading-relaxed">
             Maximize your gameplay with our minimalist 3D track names, interactive checklists, and progression tools.
           </p>
-          <button className="bg-[#7969EE] hover:bg-[#6154C0] text-white px-8 py-3.5 rounded-full font-extrabold text-base transition">
-            View Tools
+          <button className="bg-[#7969EE] text-white px-8 py-3.5 rounded-full font-extrabold text-base transition opacity-60 cursor-not-allowed pointer-events-none">
+            Coming Soon
           </button>
         </div>
 
@@ -472,10 +484,10 @@ export default function Home() {
                 <div className="p-5 flex flex-col justify-end flex-1">
                   <h4 className="font-black text-xl mb-1 text-white">Vice City 3D Map</h4>
                   <p className="text-sm text-gray-400 mb-4 font-semibold">
-                    Explore the Vice City map in 3d like you are using Apple Maps.
+                    This feature is under development. Stay tuned.
                   </p>
-                  <button className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:scale-105 hover:shadow-lg hover:shadow-[#C7E0F5]/25">
-                    View Map
+                  <button className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                    Coming Soon
                   </button>
                 </div>
               </div>
@@ -493,10 +505,10 @@ export default function Home() {
                 <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                   <h4 className="font-black text-xl mb-1 text-white">Completion Tracker</h4>
                   <p className="text-sm text-gray-300 mb-4 font-semibold">
-                    Never miss a collectible. Log your progress across missions, random events, and achievements.
+                    This feature is under development. Stay tuned.
                     </p>
-                    <button className="bg-[#757F6E] hover:bg-[#5E6660] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                      Start Tracking
+                    <button className="bg-[#757F6E] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                      Coming Soon
                     </button>
                   </div>
                 </div>
@@ -511,10 +523,10 @@ export default function Home() {
                   <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                     <h4 className="font-black text-xl mb-1 text-white">Loadout Calculator</h4>
                     <p className="text-sm text-gray-300 mb-4 font-semibold">
-                      Optimize your inventory. Calculate damage thresholds, weapon costs, and handling stats.
+                      This feature is under development. Stay tuned.
                     </p>
-                    <button className="bg-[#424345] hover:bg-[#323335] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                      Build Loadout
+                    <button className="bg-[#424345] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                      Coming Soon
                     </button>
                   </div>
                 </div>
@@ -529,10 +541,10 @@ export default function Home() {
                   <div className="relative z-10 p-5 pt-16 bg-gradient-to-t from-black/70 to-transparent text-center">
                     <h4 className="font-black text-xl mb-1 text-white">Dynamic Checklists</h4>
                     <p className="text-sm text-gray-300 mb-4 font-semibold">
-                      Interactive to-do lists. Track side activities and set custom goals for your playthrough.
+                      This feature is under development. Stay tuned.
                     </p>
-                    <button className="bg-[#A6A7A1] hover:bg-[#858681] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition">
-                      View Checklists
+                    <button className="bg-[#A6A7A1] text-white w-fit mx-auto px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
+                      Coming Soon
                     </button>
                   </div>
                 </div>

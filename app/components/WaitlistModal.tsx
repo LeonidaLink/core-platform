@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/app/lib/supabase";
 
 interface WaitlistModalProps {
@@ -37,9 +37,9 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 animate-in fade-in duration-200">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#1E0032] border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+      <div className="relative bg-[#1E0032] border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in-95 duration-300">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-white/50 hover:text-white transition"
@@ -47,39 +47,49 @@ export default function WaitlistModal({ isOpen, onClose }: WaitlistModalProps) {
           <X size={20} />
         </button>
 
-        <h2 className="text-2xl font-black mb-2">Coming Soon</h2>
-        <p className="text-white/70 font-semibold text-sm mb-6">
-          Leonida Link is launching soon. Join the waitlist to get early access.
-        </p>
-
         {status === "success" ? (
-          <div className="text-center py-4">
-            <p className="text-[#C7E0F5] font-bold text-lg">You&apos;re in! 🎉</p>
-            <p className="text-white/60 text-sm mt-2 font-semibold">
-              We&apos;ll notify you when we launch.
-            </p>
+          <div className="flex flex-col items-center justify-center py-6 text-center animate-in slide-in-from-bottom-4 fade-in duration-500">
+            <div className="w-16 h-16 bg-[#C7E0F5]/10 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle2 className="text-[#C7E0F5]" size={32} />
+            </div>
+            <h3 className="text-xl font-black text-white mb-2">You&apos;re on the list.</h3>
+            <p className="text-white/60 text-sm font-semibold">Keep an eye on your inbox for early access.</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <input
-              type="email"
-              required
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-full bg-white/5 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:border-white/30 transition font-semibold text-sm"
-            />
-            {status === "error" && (
-              <p className="text-red-400 text-sm font-semibold">{errorMsg}</p>
-            )}
-            <button
-              type="submit"
-              disabled={status === "loading"}
-              className="bg-[#C7E0F5] text-[#112A46] px-6 py-3 rounded-full font-extrabold text-sm transition hover:scale-105 hover:shadow-lg hover:shadow-[#C7E0F5]/20 disabled:opacity-50"
-            >
-              {status === "loading" ? "Joining..." : "Join the Waitlist"}
-            </button>
-          </form>
+          <>
+            <h2 className="text-2xl font-black text-white mb-2">Join the Waitlist</h2>
+            <p className="text-white/70 font-semibold text-sm mb-6">
+              Leonida Link is launching soon. Drop your email for early access.
+            </p>
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <input
+                type="email"
+                required
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-3 rounded-full bg-white/5 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:border-white/30 transition font-semibold text-sm"
+              />
+              {status === "error" && (
+                <p className="text-red-400 text-sm font-semibold">{errorMsg}</p>
+              )}
+              <button
+                type="submit"
+                disabled={status === "loading"}
+                className="w-full flex items-center justify-center gap-2 bg-[#C7E0F5] hover:bg-[#A5C4D8] text-[#112A46] px-6 py-3 rounded-full font-extrabold text-sm transition active:scale-[0.98] disabled:opacity-50"
+              >
+                {status === "loading" ? (
+                  <>
+                    <Loader2 className="animate-spin" size={18} />
+                    Joining...
+                  </>
+                ) : (
+                  "Join the Waitlist"
+                )}
+              </button>
+            </form>
+          </>
         )}
       </div>
     </div>
