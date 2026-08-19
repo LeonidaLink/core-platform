@@ -150,9 +150,9 @@ export default function Home() {
                 <p className="text-sm text-gray-400 mb-4 font-semibold">
                   Explore the Vice City map in 3d like you are using Apple Maps
                 </p>
-                <button className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
-                  Coming Soon
-                </button>
+                <a href="/map" className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:bg-[#A5C4D8]">
+                  Live
+                </a>
               </div>
             </div>
           </div>
@@ -484,11 +484,11 @@ export default function Home() {
                 <div className="p-5 flex flex-col justify-end flex-1">
                   <h4 className="font-black text-xl mb-1 text-white">Vice City 3D Map</h4>
                   <p className="text-sm text-gray-400 mb-4 font-semibold">
-                    This feature is under development. Stay tuned.
+                    Explore the Vice City map in 3d like you are using Apple Maps
                   </p>
-                  <button className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition opacity-60 cursor-not-allowed pointer-events-none">
-                    Coming Soon
-                  </button>
+                  <a href="/map" className="bg-[#C7E0F5] text-[#112A46] w-fit px-6 py-2.5 rounded-full text-sm font-extrabold transition hover:bg-[#A5C4D8]">
+                    Live
+                  </a>
                 </div>
               </div>
             </div>
@@ -573,7 +573,7 @@ export default function Home() {
           {/* Column 2: Explore */}
           <div className="flex flex-col gap-3">
             <h4 className="text-white font-bold text-lg mb-2">Explore</h4>
-            <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Interactive Map</a>
+            <a href="/map" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Interactive Map</a>
             <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Wiki Database</a>
             <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Community Forum</a>
             <a href="#" className="text-white/60 font-semibold hover:text-white transition-colors text-sm">Loadout Calculator</a>

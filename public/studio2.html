@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leonida Studio</title>
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #0a0e14; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #fff; overflow: hidden; }
+    #map { width: 100%; height: 100%; }
+
+    .glass {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+    }
+
+    .panel {
+      position: absolute;
+      padding: 16px;
+    }
+
+    .panel-left { top: 16px; left: 16px; width: 280px; max-height: calc(100vh - 32px); overflow-y: auto; }
+    .panel-right { top: 16px; right: 16px; width: 320px; max-height: calc(100vh - 32px); overflow-y: auto; }
+
+    .logo { height: 32px; margin-bottom: 12px; }
+    .title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+    .model-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+    .model-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 8px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #fff;
+    }
+    .model-btn:hover { background: rgba(255,255,255,0.1); border-color: #7969EE; }
+    .model-btn.active { background: #7969EE; border-color: #7969EE; }
+    .model-btn .icon { font-size: 24px; }
+    .model-btn .label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); }
+
+    .form-group { margin-bottom: 12px; }
+    .form-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
+    .form-input { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 13px; outline: none; transition: border-color 0.2s; }
+    .form-input:focus { border-color: #7969EE; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .btn { padding: 10px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-primary { background: #7969EE; color: #fff; }
+    .btn-primary:hover { background: #6a5ad4; }
+    .btn-danger { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); }
+    .btn-danger:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .btn-full { width: 100%; }
+
+    .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 16px 0; }
+
+    .shape-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .shape-item:hover { background: rgba(255,255,255,0.08); }
+    .shape-item.selected { background: rgba(121,105,238,0.2); border: 1px solid #7969EE; }
+    .shape-color { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .shape-info { flex: 1; min-width: 0; }
+    .shape-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .shape-type { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .shape-actions { display: flex; gap: 4px; }
+    .shape-action { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; background: transparent; border: none; color: rgba(255,255,255,0.4); cursor: pointer; font-size: 12px; }
+    .shape-action:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .shape-action.locked { color: #fbbf24; }
+
+    .mode-indicator {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      z-index: 100;
+    }
+    .mode-place { background: #7969EE; }
+    .mode-move { background: #10b981; }
+    .mode-select { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+
+    .coords-display {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 12px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: monospace;
+      color: rgba(255,255,255,0.6);
+    }
+
+    input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #7969EE; border-radius: 50%; }
+
+    .back-link {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.2s;
+      z-index: 100;
+    }
+    .back-link:hover { background: #7969EE; border-color: #7969EE; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Mode Indicator -->
+  <div id="mode-indicator" class="mode-indicator mode-select">Select Mode</div>
+
+  <!-- Coords Display -->
+  <div id="coords" class="coords-display">X: 0.000 Y: 0.000</div>
+
+  <!-- Back to Map -->
+  <a href="/map" class="back-link">← Back to Map</a>
+
+  <!-- Left Panel - Tools & Properties -->
+  <div class="panel glass panel-left">
+    <img src="/brand/logo.png" class="logo" alt="Leonida">
+
+    <div class="title">Models</div>
+    <div class="model-grid" id="model-grid"></div>
+
+    <div class="divider"></div>
+
+    <div class="title">Properties</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input type="text" class="form-input" id="prop-name" placeholder="Building name">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Width (m)</label>
+        <input type="number" class="form-input" id="prop-width" value="50" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Depth (m)</label>
+        <input type="number" class="form-input" id="prop-depth" value="50" min="1">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Height (m)</label>
+        <input type="number" class="form-input" id="prop-height" value="30" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rotation (°)</label>
+        <input type="number" class="form-input" id="prop-rotation" value="0" min="0" max="360">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="btn btn-primary btn-full" id="place-btn">Place Model</button>
+    <div style="height: 8px"></div>
+    <button class="btn btn-danger btn-full" id="delete-btn">Delete Selected</button>
+
+    <div class="divider"></div>
+
+    <button class="btn btn-full" id="3d-btn" style="background: rgba(255,255,255,0.1); color: #fff;">3D View (Pitch 60°)</button>
+    <button class="btn btn-full" id="top-btn" style="background: rgba(255,255,255,0.1); color: #fff; margin-top: 8px;">Top View (Pitch 0°)</button>
+  </div>
+
+  <!-- Right Panel - Shapes -->
+  <div class="panel glass panel-right">
+    <div class="title">Objects (<span id="shape-count">0</span>)</div>
+    <div id="shape-list"></div>
+
+    <div class="divider"></div>
+
+    <button class="btn btn-full" id="copy-btn" style="background: rgba(255,255,255,0.1); color: #fff;">Copy GeoJSON</button>
+    <div style="height: 8px"></div>
+    <button class="btn btn-full" id="download-btn" style="background: rgba(255,255,255,0.1); color: #fff;">Download .geojson</button>
+    <div style="height: 8px"></div>
+    <button class="btn btn-danger btn-full" id="clear-btn">Delete All</button>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const STORAGE_KEY = 'leonida-studio-shapes';
+    // LEONIDA_BOUNDS: west=0, south=0, east=1.0, north=1.251004
+    const BOUNDS = { west: 0, south: 0, east: 1.0, north: 1.251004 };
+    const MODEL_COLORS = {
+      skyscraper: '#7969EE',
+      office: '#0DB9FF',
+      apartment: '#F472B6',
+      house: '#D4A574',
+      shop: '#34D399',
+      park: '#3D8B37',
+      water: '#0DB9FF',
+      road: '#E8D5B7',
+      tower: '#FF69B4',
+    };
+    const MODEL_PRESETS = [
+      { id: 'skyscraper', name: 'Skyscraper', color: '#7969EE', width: 40, depth: 40, height: 200 },
+      { id: 'office', name: 'Office', color: '#0DB9FF', width: 60, depth: 40, height: 80 },
+      { id: 'apartment', name: 'Apartment', color: '#F472B6', width: 50, depth: 30, height: 60 },
+      { id: 'house', name: 'House', color: '#D4A574', width: 30, depth: 25, height: 15 },
+      { id: 'shop', name: 'Shop', color: '#34D399', width: 25, depth: 20, height: 10 },
+      { id: 'park', name: 'Park', color: '#3D8B37', width: 80, depth: 80, height: 2 },
+      { id: 'water', name: 'Water', color: '#0DB9FF', width: 100, depth: 60, height: 0 },
+      { id: 'road', name: 'Road', color: '#E8D5B7', width: 20, depth: 100, height: 0 },
+      { id: 'tower', name: 'Tower', color: '#FF69B4', width: 30, depth: 30, height: 300 },
+    ];
+
+    // ===== STATE =====
+    let shapes = [];
+    let selectedId = null;
+    let activeModel = MODEL_PRESETS[0];
+    let isDragging = false;
+    let dragStart = null;
+
+    // ===== MAP =====
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {},
+        layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#0a0e14' } }]
+      },
+      center: [0.5, 0.625],
+      zoom: 12,
+      pitch: 0,
+      renderWorldCopies: false,
+      maxPitch: 75
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), 'bottom-right');
+
+    map.on('error', e => console.error('[ERROR]', e));
+
+    map.on('load', () => {
+      // Add base map raster layer FIRST (below shapes)
+      map.addSource('base-map', {
+        type: 'image',
+        url: '/map/leonida-base.jpg',
+        coordinates: [
+          [BOUNDS.west, BOUNDS.north],   // top-left
+          [BOUNDS.east, BOUNDS.north],   // top-right
+          [BOUNDS.east, BOUNDS.south],   // bottom-right
+          [BOUNDS.west, BOUNDS.south],   // bottom-left
+        ]
+      });
+      map.addLayer({
+        id: 'base-map-layer',
+        type: 'raster',
+        source: 'base-map',
+        paint: { 'raster-opacity': 1 }
+      }, 'bg'); // Insert above background
+
+      // Fit to LEONIDA_BOUNDS
+      map.fitBounds([[BOUNDS.west, BOUNDS.south], [BOUNDS.east, BOUNDS.north]], { padding: 20 });
+
+      // Load saved shapes
+      loadFromStorage();
+      renderShapes();
+      updateModeIndicator();
+      updateShapeList();
+    });
+
+    // ===== HELPERS =====
+    function mToLng(m) { return m / 2590; } // 2590m = 1 unit
+    function mToLat(m) { return m / 3240; } // 3240m = 1.251 units
+
+    function generateBox(cx, cy, width, depth, rotation) {
+      const hw = mToLng(width) / 2;
+      const hd = mToLat(depth) / 2;
+      const rad = (rotation * Math.PI) / 180;
+      const cos = Math.cos(rad);
+      const sin = Math.sin(rad);
+      const corners = [[-hw, hd], [hw, hd], [hw, -hd], [-hw, -hd]];
+      return corners.map(([x, y]) => [
+        cx + x * cos - y * sin,
+        cy + x * sin + y * cos
+      ]);
+    }
+
+    function shapeToGeoJSON(shape) {
+      const coords = generateBox(shape.x, shape.y, shape.width, shape.depth, shape.rotation);
+      return {
+        type: 'Feature',
+        id: shape.id,
+        geometry: { type: 'Polygon', coordinates: [[...coords, coords[0]]] },
+        properties: { id: shape.id, name: shape.name, type: shape.type, width: shape.width, depth: shape.depth, height: shape.height, rotation: shape.rotation, locked: shape.locked }
+      };
+    }
+
+    // ===== STORAGE =====
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(shapes));
+    }
+
+    function loadFromStorage() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) shapes = JSON.parse(saved);
+      } catch (e) { console.error('[Storage error]', e); }
+    }
+
+    // ===== RENDER =====
+    function renderShapes() {
+      // Remove old layers/sources
+      ['shapes-fill', 'shapes-line', 'shapes-selected'].forEach(id => {
+        if (map.getLayer(id)) map.removeLayer(id);
+      });
+      if (map.getSource('shapes-source')) map.removeSource('shapes-source');
+
+      if (shapes.length === 0) return;
+
+      // Create GeoJSON
+      const fc = { type: 'FeatureCollection', features: shapes.map(shapeToGeoJSON) };
+
+      map.addSource('shapes-source', { type: 'geojson', data: fc });
+
+      // Fill extrusion - INSIDE bounds check
+      map.addLayer({
+        id: 'shapes-fill',
+        type: 'fill-extrusion',
+        source: 'shapes-source',
+        minzoom: 0, // CRITICAL: override default minzoom 15
+        paint: {
+          'fill-extrusion-color': [
+            'case',
+            ['==', ['get', 'id'], selectedId || ''],
+            '#ffffff',
+            ['get', 'color']
+          ],
+          'fill-extrusion-height': ['get', 'height'],
+          'fill-extrusion-base': 0,
+          'fill-extrusion-opacity': 0.85
+        }
+      }, 'base-map-layer'); // Insert above base map
+
+      // White outline for selected
+      map.addLayer({
+        id: 'shapes-line',
+        type: 'line',
+        source: 'shapes-source',
+        minzoom: 0,
+        filter: ['==', ['get', 'id'], selectedId || ''],
+        paint: { 'line-color': '#ffffff', 'line-width': 3, 'line-opacity': 1 }
+      });
+    }
+
+    // ===== MODEL GRID =====
+    const modelGrid = document.getElementById('model-grid');
+    MODEL_PRESETS.forEach(model => {
+      const btn = document.createElement('button');
+      btn.className = 'model-btn' + (model.id === activeModel.id ? ' active' : '');
+      btn.innerHTML = `
+        <span class="icon" style="color: ${model.color}">■</span>
+        <span class="label">${model.name}</span>
+      `;
+      btn.onclick = () => {
+        document.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeModel = model;
+        document.getElementById('prop-width').value = model.width;
+        document.getElementById('prop-depth').value = model.depth;
+        document.getElementById('prop-height').value = model.height;
+        document.getElementById('prop-name').value = model.name;
+      };
+      modelGrid.appendChild(btn);
+    });
+
+    // ===== PROPERTIES =====
+    ['prop-width', 'prop-depth', 'prop-height', 'prop-rotation'].forEach(id => {
+      document.getElementById(id).oninput = () => {
+        if (selectedId) {
+          shapes = shapes.map(s => s.id === selectedId ? {
+            ...s,
+            width: parseFloat(document.getElementById('prop-width').value),
+            depth: parseFloat(document.getElementById('prop-depth').value),
+            height: parseFloat(document.getElementById('prop-height').value),
+            rotation: parseFloat(document.getElementById('prop-rotation').value)
+          } : s);
+          renderShapes();
+          saveToStorage();
+          updateShapeList();
+        }
+      };
+    });
+
+    // ===== PLACE =====
+    let isPlaceMode = false;
+    document.getElementById('place-btn').onclick = () => {
+      isPlaceMode = !isPlaceMode;
+      document.getElementById('place-btn').textContent = isPlaceMode ? 'Cancel' : 'Place Model';
+      document.getElementById('place-btn').className = isPlaceMode ? 'btn btn-danger btn-full' : 'btn btn-primary btn-full';
+      updateModeIndicator();
+    };
+
+    map.on('click', e => {
+      if (!isPlaceMode) return;
+
+      // Check if click is within LEONIDA_BOUNDS
+      const lng = e.lngLat.lng;
+      const lat = e.lngLat.lat;
+      if (lng < BOUNDS.west || lng > BOUNDS.east || lat < BOUNDS.south || lat > BOUNDS.north) {
+        alert('Click inside the map bounds!');
+        return;
+      }
+
+      const newShape = {
+        id: crypto.randomUUID(),
+        name: document.getElementById('prop-name').value || activeModel.name,
+        type: activeModel.id,
+        color: MODEL_COLORS[activeModel.id] || '#D4A574',
+        x: lng,
+        y: lat,
+        width: parseFloat(document.getElementById('prop-width').value),
+        depth: parseFloat(document.getElementById('prop-depth').value),
+        height: parseFloat(document.getElementById('prop-height').value),
+        rotation: parseFloat(document.getElementById('prop-rotation').value),
+        locked: false
+      };
+      shapes.push(newShape);
+      selectedId = newShape.id;
+      renderShapes();
+      saveToStorage();
+      updateShapeList();
+      isPlaceMode = false;
+      document.getElementById('place-btn').textContent = 'Place Model';
+      document.getElementById('place-btn').className = 'btn btn-primary btn-full';
+      updateModeIndicator();
+      map.flyTo({ pitch: 0, duration: 300 });
+    });
+
+    // ===== SELECT =====
+    map.on('click', e => {
+      if (isPlaceMode) return;
+      const features = map.queryRenderedFeatures(e.point, { layers: ['shapes-fill'] });
+      if (features.length > 0) {
+        const id = features[0].properties.id;
+        if (id !== selectedId) {
+          selectedId = id;
+          renderShapes();
+          updateShapeList();
+          updatePropertiesPanel();
+          updateModeIndicator();
+        }
+      } else {
+        if (selectedId) {
+          selectedId = null;
+          renderShapes();
+          updateShapeList();
+          updateModeIndicator();
+        }
+      }
+    });
+
+    // ===== DRAG TO MOVE =====
+    map.on('mousedown', e => {
+      if (map.getPitch() > 5) return; // Only in top-down view
+      const features = map.queryRenderedFeatures(e.point, { layers: ['shapes-fill'] });
+      if (features.length > 0) {
+        const shape = shapes.find(s => s.id === features[0].properties.id);
+        if (shape && !shape.locked) {
+          isDragging = true;
+          dragStart = { x: e.lngLat.lng, y: e.lngLat.lat, shapeX: shape.x, shapeY: shape.y, shapeId: shape.id };
+          map.dragPan.disable();
+          updateModeIndicator();
+        }
+      }
+    });
+
+    map.on('mousemove', e => {
+      if (!isDragging || !dragStart) return;
+      const dx = e.lngLat.lng - dragStart.x;
+      const dy = e.lngLat.lat - dragStart.y;
+      shapes = shapes.map(s => s.id === dragStart.shapeId ? { ...s, x: dragStart.shapeX + dx, y: dragStart.shapeY + dy } : s);
+      renderShapes();
+    });
+
+    map.on('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        dragStart = null;
+        map.dragPan.enable();
+        saveToStorage();
+        updateShapeList();
+        updateModeIndicator();
+      }
+    });
+
+    // ===== KEYBOARD =====
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT') return;
+
+      if (e.key === 'Escape') {
+        selectedId = null;
+        isPlaceMode = false;
+        document.getElementById('place-btn').textContent = 'Place Model';
+        document.getElementById('place-btn').className = 'btn btn-primary btn-full';
+        renderShapes();
+        updateShapeList();
+        updateModeIndicator();
+      }
+
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
+        const shape = shapes.find(s => s.id === selectedId);
+        if (shape && !shape.locked) {
+          shapes = shapes.filter(s => s.id !== selectedId);
+          selectedId = null;
+          renderShapes();
+          saveToStorage();
+          updateShapeList();
+        }
+      }
+
+      // Arrow keys nudge
+      if (selectedId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        const shape = shapes.find(s => s.id === selectedId);
+        if (shape && !shape.locked) {
+          const step = e.shiftKey ? 10 : 1;
+          let dx = 0, dy = 0;
+          if (e.key === 'ArrowLeft') dx = -mToLng(step);
+          if (e.key === 'ArrowRight') dx = mToLng(step);
+          if (e.key === 'ArrowUp') dy = mToLat(step);
+          if (e.key === 'ArrowDown') dy = -mToLat(step);
+          shapes = shapes.map(s => s.id === selectedId ? { ...s, x: s.x + dx, y: s.y + dy } : s);
+          renderShapes();
+          saveToStorage();
+          updateShapeList();
+        }
+      }
+    });
+
+    // ===== COORDS =====
+    map.on('mousemove', e => {
+      document.getElementById('coords').textContent = `X: ${e.lngLat.lng.toFixed(4)} Y: ${e.lngLat.lat.toFixed(4)}`;
+    });
+
+    // ===== VIEW CONTROLS =====
+    document.getElementById('3d-btn').onclick = () => map.flyTo({ pitch: 60, zoom: 14, duration: 1000 });
+    document.getElementById('top-btn').onclick = () => map.flyTo({ pitch: 0, zoom: 14, duration: 500 });
+
+    // ===== DELETE =====
+    document.getElementById('delete-btn').onclick = () => {
+      if (selectedId) {
+        const shape = shapes.find(s => s.id === selectedId);
+        if (shape && !shape.locked) {
+          shapes = shapes.filter(s => s.id !== selectedId);
+          selectedId = null;
+          renderShapes();
+          saveToStorage();
+          updateShapeList();
+        }
+      }
+    };
+
+    // ===== SHAPE LIST =====
+    function updateShapeList() {
+      document.getElementById('shape-count').textContent = shapes.length;
+      const list = document.getElementById('shape-list');
+      list.innerHTML = '';
+      shapes.forEach(shape => {
+        const item = document.createElement('div');
+        item.className = 'shape-item' + (shape.id === selectedId ? ' selected' : '');
+        item.innerHTML = `
+          <div class="shape-color" style="background: ${shape.color}"></div>
+          <div class="shape-info">
+            <div class="shape-name">${shape.name}</div>
+            <div class="shape-type">${shape.width}×${shape.depth}×${shape.height}m</div>
+          </div>
+          <div class="shape-actions">
+            <button class="shape-action ${shape.locked ? 'locked' : ''}" data-action="lock">🔒</button>
+            <button class="shape-action" data-action="fly">📍</button>
+            <button class="shape-action" data-action="delete">🗑️</button>
+          </div>
+        `;
+        item.onclick = (e) => {
+          const action = e.target.closest('[data-action]')?.dataset.action;
+          if (action === 'lock') {
+            shapes = shapes.map(s => s.id === shape.id ? { ...s, locked: !s.locked } : s);
+            saveToStorage();
+            updateShapeList();
+          } else if (action === 'fly') {
+            map.flyTo({ center: [shape.x, shape.y], zoom: 15, pitch: 45, duration: 1000 });
+          } else if (action === 'delete') {
+            if (!shape.locked) {
+              shapes = shapes.filter(s => s.id !== shape.id);
+              if (selectedId === shape.id) selectedId = null;
+              renderShapes();
+              saveToStorage();
+              updateShapeList();
+            }
+          } else {
+            selectedId = shape.id;
+            renderShapes();
+            updateShapeList();
+            updatePropertiesPanel();
+            updateModeIndicator();
+          }
+        };
+        list.appendChild(item);
+      });
+    }
+
+    function updatePropertiesPanel() {
+      const shape = shapes.find(s => s.id === selectedId);
+      if (shape) {
+        document.getElementById('prop-name').value = shape.name;
+        document.getElementById('prop-width').value = shape.width;
+        document.getElementById('prop-depth').value = shape.depth;
+        document.getElementById('prop-height').value = shape.height;
+        document.getElementById('prop-rotation').value = shape.rotation;
+      }
+    }
+
+    function updateModeIndicator() {
+      const indicator = document.getElementById('mode-indicator');
+      if (isPlaceMode) {
+        indicator.textContent = `Place: ${activeModel.name}`;
+        indicator.className = 'mode-indicator mode-place';
+      } else if (isDragging) {
+        indicator.textContent = 'Move Object';
+        indicator.className = 'mode-indicator mode-move';
+      } else if (selectedId) {
+        const shape = shapes.find(s => s.id === selectedId);
+        indicator.textContent = shape && shape.locked ? `Selected: ${shape.name} (Locked)` : `Selected: ${shape?.name || 'Object'}`;
+        indicator.className = 'mode-indicator mode-select';
+      } else {
+        indicator.textContent = 'Select Mode';
+        indicator.className = 'mode-indicator mode-select';
+      }
+    }
+
+    // ===== EXPORT =====
+    document.getElementById('copy-btn').onclick = () => {
+      const fc = { type: 'FeatureCollection', features: shapes.map(shapeToGeoJSON) };
+      navigator.clipboard.writeText(JSON.stringify(fc, null, 2));
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy GeoJSON', 2000);
+    };
+
+    document.getElementById('download-btn').onclick = () => {
+      const fc = { type: 'FeatureCollection', features: shapes.map(shapeToGeoJSON) };
+      const blob = new Blob([JSON.stringify(fc, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'leonida-studio.geojson'; a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    document.getElementById('clear-btn').onclick = () => {
+      if (confirm('Delete all objects?')) {
+        shapes = [];
+        selectedId = null;
+        renderShapes();
+        saveToStorage();
+        updateShapeList();
+      }
+    };
+
+    // Init
+    updateShapeList();
+  </script>
+</body>
+</html>
