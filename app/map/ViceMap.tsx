@@ -5,9 +5,62 @@ import { Map } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Eye, EyeOff, RotateCcw, Box } from "lucide-react";
 import Link from "next/link";
-import { LEONIDA_BOUNDS, getRasterCorners } from "./lib/leonida-crs";
+import { LEONIDA_BOUNDS, getRasterCorners, buildRoundedBoxRing, bufferLineRing, HEIGHT_EXAGGERATION } from "./lib/leonida-crs";
+import type { MapShapeRow } from "@/app/actions/mapShapes";
 
-export default function ViceMap() {
+const SHAPE_SOURCE_ID = "published-shapes-source";
+const SHAPE_LAYER_ID = "published-shapes-fill";
+// Apple Maps-style buildings: one muted blue-gray for every building (roads/
+// bridges keep their own asphalt/deck color), shaded by the map's light so
+// each face reads with soft depth instead of flat color.
+const APPLE_BUILDING_COLOR = "#8791A6";
+
+// Buildings taller than this get a stepped/setback silhouette (a narrower
+// upper tier on top of the full-footprint base) instead of a plain prism —
+// mirrors the tiered towers in reference Apple/Google Maps 3D renders.
+const TALL_BUILDING_HEIGHT_M = 60;
+const TIER_HEIGHT_RATIO = 0.62;
+const TIER_FOOTPRINT_RATIO = 0.62;
+
+function boxFeature(row: MapShapeRow, widthM: number, depthM: number, base: number, height: number, color: string) {
+  const ring = buildRoundedBoxRing([row.center_lng, row.center_lat], widthM, depthM, row.rotation);
+  return {
+    type: "Feature" as const,
+    id: row.id,
+    geometry: { type: "Polygon" as const, coordinates: [ring] },
+    properties: { color, base, height, type: row.type },
+  };
+}
+
+function buildingFeatures(row: MapShapeRow) {
+  const widthM = row.width_m;
+  const depthM = row.depth_m ?? row.width_m;
+  const color = row.color ?? APPLE_BUILDING_COLOR;
+  if (row.height_m < TALL_BUILDING_HEIGHT_M) {
+    return [boxFeature(row, widthM, depthM, 0, row.height_m, color)];
+  }
+  const baseTierHeight = row.height_m * TIER_HEIGHT_RATIO;
+  return [
+    boxFeature(row, widthM, depthM, 0, baseTierHeight, color),
+    boxFeature(row, widthM * TIER_FOOTPRINT_RATIO, depthM * TIER_FOOTPRINT_RATIO, baseTierHeight, row.height_m, color),
+  ];
+}
+
+function rowToFeatures(row: MapShapeRow) {
+  const isLine = row.type === "road" || row.type === "bridge";
+  if (isLine && row.points) {
+    const ring = bufferLineRing(row.points as [[number, number], [number, number]], row.width_m);
+    return [{
+      type: "Feature" as const,
+      id: row.id,
+      geometry: { type: "Polygon" as const, coordinates: [ring] },
+      properties: { color: row.color ?? "#3a3a3a", base: 0, height: row.height_m, type: row.type },
+    }];
+  }
+  return buildingFeatures(row);
+}
+
+export default function ViceMap({ shapes = [] }: { shapes?: MapShapeRow[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map | null>(null);
   const [showRaster, setShowRaster] = useState(true);
@@ -24,6 +77,7 @@ export default function ViceMap() {
         glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
         sources: {},
         layers: [{ id: "bg", type: "background", paint: { "background-color": "#0a0e14" } }],
+        light: { anchor: "viewport", color: "#dbe4f0", intensity: 0.45, position: [1.15, 210, 55] },
       },
       renderWorldCopies: false,
       maxBounds: [[-0.5, -0.5], [1.5, 1.8]] as [[number, number], [number, number]],
@@ -43,6 +97,29 @@ export default function ViceMap() {
         map.addSource("raster", { type: "image", url: "/map/leonida-base.jpg", coordinates: getRasterCorners() });
         map.addLayer({ id: "raster-layer", type: "raster", source: "raster", paint: { "raster-opacity": 1 } });
       } catch (e) { console.error("[RASTER]", e); }
+
+      if (shapes.length > 0) {
+        const fc = { type: "FeatureCollection" as const, features: shapes.flatMap(rowToFeatures) };
+        map.addSource(SHAPE_SOURCE_ID, { type: "geojson", data: fc });
+        map.addLayer({
+          id: SHAPE_LAYER_ID,
+          type: "fill-extrusion",
+          source: SHAPE_SOURCE_ID,
+          minzoom: 0,
+          paint: {
+            "fill-extrusion-color": [
+              "case",
+              ["any", ["==", ["get", "type"], "road"], ["==", ["get", "type"], "bridge"]],
+              ["get", "color"],
+              APPLE_BUILDING_COLOR,
+            ],
+            "fill-extrusion-height": ["*", ["get", "height"], HEIGHT_EXAGGERATION],
+            "fill-extrusion-base": ["*", ["get", "base"], HEIGHT_EXAGGERATION],
+            "fill-extrusion-vertical-gradient": true,
+            "fill-extrusion-opacity": 0.95,
+          },
+        });
+      }
 
       map.resize();
     });

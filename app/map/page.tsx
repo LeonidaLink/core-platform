@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import ViceMap from "./ViceMap";
+import { getPublishedShapes } from "@/app/actions/mapShapes";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Leonida 3D Map | Leonida Link",
@@ -13,10 +16,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function MapPage() {
+export default async function MapPage() {
+  const shapes = await getPublishedShapes().catch(() => []);
+
   return (
     <main className="relative w-screen h-screen overflow-hidden bg-[#0a0e14]">
-      <ViceMap />
+      <ViceMap shapes={shapes} />
     </main>
   );
 }

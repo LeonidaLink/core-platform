@@ -6,16 +6,18 @@
   <title>Leonida Studio</title>
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { width: 100%; height: 100%; background: #0a0e14; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #fff; overflow: hidden; }
     #map { width: 100%; height: 100%; }
 
     .glass {
-      background: rgba(255,255,255,0.05);
+      background: rgba(8, 11, 18, 0.88);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
     }
 
     .panel {
@@ -23,8 +25,9 @@
       padding: 16px;
     }
 
-    .panel-left { top: 16px; left: 16px; width: 280px; max-height: calc(100vh - 32px); overflow-y: auto; }
+    .panel-left { top: 16px; left: 16px; width: 280px; max-height: calc(100vh - 250px); overflow-y: auto; }
     .panel-right { top: 16px; right: 16px; width: 320px; max-height: calc(100vh - 32px); overflow-y: auto; }
+    .panel-bottom-left { bottom: 16px; left: 16px; width: 260px; }
 
     .logo { height: 32px; margin-bottom: 12px; }
     .title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
@@ -35,7 +38,7 @@
       flex-direction: column;
       align-items: center;
       gap: 4px;
-      padding: 12px 8px;
+      padding: 10px 6px;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 8px;
@@ -44,24 +47,31 @@
       color: #fff;
     }
     .model-btn:hover { background: rgba(255,255,255,0.1); border-color: #7969EE; }
-    .model-btn.active { background: #7969EE; border-color: #7969EE; }
-    .model-btn .icon { font-size: 24px; }
-    .model-btn .label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.7); }
+    .model-btn.active { background: rgba(121,105,238,0.25); border-color: #7969EE; }
+    .model-btn .icon { font-size: 16px; }
+    .model-btn .label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.7); text-align: center; line-height: 1.2; }
 
     .form-group { margin-bottom: 12px; }
     .form-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: block; }
     .form-input { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #fff; font-size: 13px; outline: none; transition: border-color 0.2s; }
     .form-input:focus { border-color: #7969EE; }
+    .form-input:disabled { opacity: 0.4; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
     .btn { padding: 10px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; border: none; }
     .btn-primary { background: #7969EE; color: #fff; }
     .btn-primary:hover { background: #6a5ad4; }
+    .btn-publish { background: #10b981; color: #fff; }
+    .btn-publish:hover { background: #0d9668; }
+    .btn-publish:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-danger { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.1); }
     .btn-danger:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
     .btn-full { width: 100%; }
 
     .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 16px 0; }
+
+    .status-line { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
 
     .shape-item {
       display: flex;
@@ -98,7 +108,7 @@
     }
     .mode-place { background: #7969EE; }
     .mode-move { background: #10b981; }
-    .mode-select { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+    .mode-select { background: rgba(8, 11, 18, 0.85); border: 1px solid rgba(255,255,255,0.2); }
 
     .coords-display {
       position: absolute;
@@ -132,10 +142,26 @@
       z-index: 100;
     }
     .back-link:hover { background: #7969EE; border-color: #7969EE; }
+
+    /* Gizmo */
+    #gizmo { position: absolute; inset: 0; pointer-events: none; z-index: 50; display: none; }
+    .handle { position: absolute; top: 0; left: 0; pointer-events: auto; }
+    .handle-resize { width: 12px; height: 12px; margin: -6px 0 0 -6px; background: #fff; border: 2px solid #7969EE; border-radius: 2px; cursor: pointer; }
+    .handle-move { width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+    .handle-rotate { background: #7969EE; cursor: grab; }
+    .handle-height { background: #38bdf8; cursor: ns-resize; }
   </style>
 </head>
 <body>
   <div id="map"></div>
+  <div id="gizmo">
+    <div class="handle handle-resize" id="h-resize-right"></div>
+    <div class="handle handle-resize" id="h-resize-left"></div>
+    <div class="handle handle-resize" id="h-resize-top"></div>
+    <div class="handle handle-resize" id="h-resize-bottom"></div>
+    <div class="handle handle-move handle-rotate" id="h-rotate" title="Rotate"></div>
+    <div class="handle handle-move handle-height" id="h-height" title="Height"></div>
+  </div>
 
   <!-- Mode Indicator -->
   <div id="mode-indicator" class="mode-indicator mode-select">Select Mode</div>
@@ -150,7 +176,7 @@
   <div class="panel glass panel-left">
     <img src="/brand/logo.png" class="logo" alt="Leonida">
 
-    <div class="title">Models</div>
+    <div class="title">Buildings</div>
     <div class="model-grid" id="model-grid"></div>
 
     <div class="divider"></div>
@@ -163,17 +189,17 @@
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Width (m)</label>
-        <input type="number" class="form-input" id="prop-width" value="50" min="1">
+        <input type="number" class="form-input" id="prop-width" value="12" min="1">
       </div>
       <div class="form-group">
         <label class="form-label">Depth (m)</label>
-        <input type="number" class="form-input" id="prop-depth" value="50" min="1">
+        <input type="number" class="form-input" id="prop-depth" value="10" min="1">
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Height (m)</label>
-        <input type="number" class="form-input" id="prop-height" value="30" min="1">
+        <input type="number" class="form-input" id="prop-height" value="6" min="1">
       </div>
       <div class="form-group">
         <label class="form-label">Rotation (°)</label>
@@ -183,9 +209,16 @@
 
     <div class="divider"></div>
 
-    <button class="btn btn-primary btn-full" id="place-btn">Place Model</button>
+    <button class="btn btn-primary btn-full" id="place-btn">Place Building</button>
     <div style="height: 8px"></div>
     <button class="btn btn-danger btn-full" id="delete-btn">Delete Selected</button>
+
+    <div class="divider"></div>
+
+    <div class="title">Infrastructure</div>
+    <button class="btn btn-full" id="place-road-btn" style="background: rgba(255,255,255,0.1); color: #fff;">Place Road</button>
+    <div style="height: 8px"></div>
+    <button class="btn btn-full" id="place-bridge-btn" style="background: rgba(255,255,255,0.1); color: #fff;">Place Bridge</button>
 
     <div class="divider"></div>
 
@@ -193,13 +226,33 @@
     <button class="btn btn-full" id="top-btn" style="background: rgba(255,255,255,0.1); color: #fff; margin-top: 8px;">Top View (Pitch 0°)</button>
   </div>
 
+  <!-- Bottom Left - Base map controls (fixed height, panel-left is capped above so it can't reach this) -->
+  <div class="panel glass panel-bottom-left">
+    <div class="title">Base Map</div>
+    <div class="form-group">
+      <label class="form-label">Opacity</label>
+      <input type="range" id="raster-opacity" min="0" max="100" value="100">
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="height-exag-label">Height Exaggeration (8x)</label>
+      <input type="range" id="height-exag" min="1" max="30" value="8">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reference Overlay</label>
+      <input type="range" id="real-map-opacity" min="0" max="100" value="60">
+    </div>
+  </div>
+
   <!-- Right Panel - Shapes -->
   <div class="panel glass panel-right">
     <div class="title">Objects (<span id="shape-count">0</span>)</div>
+    <div class="status-line" id="status-line">Not saved yet</div>
     <div id="shape-list"></div>
 
     <div class="divider"></div>
 
+    <button class="btn btn-publish btn-full" id="publish-btn">Publish to Map</button>
+    <div style="height: 8px"></div>
     <button class="btn btn-full" id="copy-btn" style="background: rgba(255,255,255,0.1); color: #fff;">Copy GeoJSON</button>
     <div style="height: 8px"></div>
     <button class="btn btn-full" id="download-btn" style="background: rgba(255,255,255,0.1); color: #fff;">Download .geojson</button>
@@ -208,31 +261,31 @@
   </div>
 
   <script>
-    // ===== CONFIG =====
+    // ===== CONFIG (mirrors app/map/lib/leonida-crs.ts) =====
     const STORAGE_KEY = 'leonida-studio-shapes';
-    // LEONIDA_BOUNDS: west=0, south=0, east=1.0, north=1.251004
+    const MAP_WIDTH_PX = 2590;
+    const MAP_HEIGHT_PX = 3240;
     const BOUNDS = { west: 0, south: 0, east: 1.0, north: 1.251004 };
-    const MODEL_COLORS = {
-      skyscraper: '#7969EE',
-      office: '#0DB9FF',
-      apartment: '#F472B6',
-      house: '#D4A574',
-      shop: '#34D399',
-      park: '#3D8B37',
-      water: '#0DB9FF',
-      road: '#E8D5B7',
-      tower: '#FF69B4',
-    };
+    let HEIGHT_EXAGGERATION = 8;
+    // Apple Maps-style buildings: one muted blue-gray for every building
+    // (roads/bridges keep their own asphalt/deck color), shaded by the map's
+    // light so each face reads with soft depth instead of flat color.
+    const APPLE_BUILDING_COLOR = '#8791A6';
+
+    const SUPABASE_URL = 'https://cggrcifabwvbvlpnlrpd.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnZ3JjaWZhYnd2YnZscG5scnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM5NTcwNjgsImV4cCI6MjA5OTUzMzA2OH0.zJFl6ZufA4sxBbZwDtrOx7ogNeQO-kIXjLgmplpEeFM';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const MODEL_PRESETS = [
-      { id: 'skyscraper', name: 'Skyscraper', color: '#7969EE', width: 40, depth: 40, height: 200 },
-      { id: 'office', name: 'Office', color: '#0DB9FF', width: 60, depth: 40, height: 80 },
-      { id: 'apartment', name: 'Apartment', color: '#F472B6', width: 50, depth: 30, height: 60 },
-      { id: 'house', name: 'House', color: '#D4A574', width: 30, depth: 25, height: 15 },
-      { id: 'shop', name: 'Shop', color: '#34D399', width: 25, depth: 20, height: 10 },
-      { id: 'park', name: 'Park', color: '#3D8B37', width: 80, depth: 80, height: 2 },
-      { id: 'water', name: 'Water', color: '#0DB9FF', width: 100, depth: 60, height: 0 },
-      { id: 'road', name: 'Road', color: '#E8D5B7', width: 20, depth: 100, height: 0 },
-      { id: 'tower', name: 'Tower', color: '#FF69B4', width: 30, depth: 30, height: 300 },
+      { id: 'house',      name: 'House',          color: '#D4A574', width: 12, depth: 10, height: 6 },
+      { id: 'shop',       name: 'Shop',            color: '#34D399', width: 20, depth: 15, height: 8 },
+      { id: 'apartment',  name: 'Apartment',       color: '#F472B6', width: 35, depth: 25, height: 25 },
+      { id: 'office',     name: 'Office Block',    color: '#0DB9FF', width: 50, depth: 40, height: 60 },
+      { id: 'tower',      name: 'Tower',           color: '#FF69B4', width: 40, depth: 40, height: 120 },
+      { id: 'skyscraper', name: 'Skyscraper',      color: '#7969EE', width: 45, depth: 45, height: 220 },
+      { id: 'hotel',      name: 'Hotel',           color: '#FBBF24', width: 60, depth: 30, height: 90 },
+      { id: 'warehouse',  name: 'Warehouse',       color: '#9CA3AF', width: 80, depth: 50, height: 12 },
+      { id: 'parking',    name: 'Parking Garage',  color: '#6B7280', width: 60, depth: 40, height: 20 },
     ];
 
     // ===== STATE =====
@@ -241,6 +294,27 @@
     let activeModel = MODEL_PRESETS[0];
     let isDragging = false;
     let dragStart = null;
+    let isPlacingRoad = null; // null | 'road' | 'bridge'
+    let roadStartPoint = null; // [lng,lat] set after the first click
+
+    // ===== UNDO =====
+    let undoStack = [];
+    function pushUndo() {
+      undoStack.push(JSON.stringify(shapes));
+      if (undoStack.length > 50) undoStack.shift();
+    }
+    function undo() {
+      if (undoStack.length === 0) return;
+      shapes = JSON.parse(undoStack.pop());
+      selectedId = null;
+      isDragging = false;
+      dragStart = null;
+      renderShapes();
+      saveToStorage();
+      updateShapeList();
+      updatePropertiesPanel();
+      updateModeIndicator();
+    }
 
     // ===== MAP =====
     const map = new maplibregl.Map({
@@ -248,7 +322,8 @@
       style: {
         version: 8,
         sources: {},
-        layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#0a0e14' } }]
+        layers: [{ id: 'bg', type: 'background', paint: { 'background-color': '#0a0e14' } }],
+        light: { anchor: 'viewport', color: '#dbe4f0', intensity: 0.45, position: [1.15, 210, 55] }
       },
       center: [0.5, 0.625],
       zoom: 12,
@@ -262,15 +337,14 @@
     map.on('error', e => console.error('[ERROR]', e));
 
     map.on('load', () => {
-      // Add base map raster layer FIRST (below shapes)
       map.addSource('base-map', {
         type: 'image',
         url: '/map/leonida-base.jpg',
         coordinates: [
-          [BOUNDS.west, BOUNDS.north],   // top-left
-          [BOUNDS.east, BOUNDS.north],   // top-right
-          [BOUNDS.east, BOUNDS.south],   // bottom-right
-          [BOUNDS.west, BOUNDS.south],   // bottom-left
+          [BOUNDS.west, BOUNDS.north],
+          [BOUNDS.east, BOUNDS.north],
+          [BOUNDS.east, BOUNDS.south],
+          [BOUNDS.west, BOUNDS.south],
         ]
       });
       map.addLayer({
@@ -278,48 +352,177 @@
         type: 'raster',
         source: 'base-map',
         paint: { 'raster-opacity': 1 }
-      }, 'bg'); // Insert above background
+      }); // no beforeId: appended above 'bg', which is what we want
 
-      // Fit to LEONIDA_BOUNDS
+      // Reference overlay laid over the stylized base map so buildings can
+      // be traced against real street/block layout instead of guessed from
+      // a description. cleanbase.png has a different aspect ratio and crop
+      // margin than BOUNDS (leonida-base.jpg's exact pixel dimensions), so
+      // its corners are NOT plain BOUNDS — they're computed by matching the
+      // island's silhouette bounding box in both images (color-detected:
+      // water vs. land) and mapping cleanbase's full canvas through that
+      // same fractional offset into leonida-base.jpg's pixel space, then to
+      // lng/lat. See scratchpad find-alignment2.js for the detection script.
+      // Nudged +73m east (0.028185deg at MAP_WIDTH_PX=2590) and -11m south
+      // (0.003395deg at MAP_HEIGHT_PX=3240) per manual road-alignment check
+      // against the base map.
+      map.addSource('real-map', {
+        type: 'image',
+        url: '/map/cleanbase.png',
+        coordinates: [
+          [0.067993, 1.241435], // top-left
+          [0.931465, 1.241435], // top-right
+          [0.931465, -0.006330], // bottom-right
+          [0.067993, -0.006330], // bottom-left
+        ]
+      });
+      map.addLayer({
+        id: 'real-map-layer',
+        type: 'raster',
+        source: 'real-map',
+        paint: { 'raster-opacity': 0.6 }
+      }); // appended above base-map-layer, below shapes — trace target, not a floor
+
       map.fitBounds([[BOUNDS.west, BOUNDS.south], [BOUNDS.east, BOUNDS.north]], { padding: 20 });
 
-      // Load saved shapes
       loadFromStorage();
       renderShapes();
       updateModeIndicator();
       updateShapeList();
+      loadPublishedFromSupabase();
     });
 
-    // ===== HELPERS =====
-    function mToLng(m) { return m / 2590; } // 2590m = 1 unit
-    function mToLat(m) { return m / 3240; } // 3240m = 1.251 units
+    map.on('move', updateGizmo);
 
-    function generateBox(cx, cy, width, depth, rotation) {
+    // ===== HELPERS (meters -> degrees, matches leonida-crs.ts) =====
+    function mToLng(m) { return m / MAP_WIDTH_PX; }
+    function mToLat(m) { return m / MAP_HEIGHT_PX; }
+
+    function boxPoint(center, rotationDeg, localXMeters, localYMeters) {
+      const x = mToLng(localXMeters);
+      const y = mToLat(localYMeters);
+      const rad = (rotationDeg * Math.PI) / 180;
+      const cos = Math.cos(rad), sin = Math.sin(rad);
+      return [center[0] + x * cos - y * sin, center[1] + x * sin + y * cos];
+    }
+
+    function toLocalDelta(dx, dy, rotationDeg) {
+      const rad = (rotationDeg * Math.PI) / 180;
+      const cos = Math.cos(rad), sin = Math.sin(rad);
+      return [dx * cos + dy * sin, -dx * sin + dy * cos];
+    }
+
+    // Rounded-rectangle footprint (Apple Maps-style soft building corners),
+    // no 3D model / dependency involved — just more points on the same
+    // fill-extrusion polygon. Corner arcs are built directly in the same
+    // (anisotropic) lng/lat half-extent space as the old sharp-corner boxes,
+    // and rotated the exact same way (plain cos/sin on that space) — doing
+    // the rotation in isotropic meter-space first and converting per-axis
+    // afterward looks correct at rotation 0 but shears at any other angle,
+    // since scale and rotate don't commute when the two axes scale
+    // differently (MAP_WIDTH_PX vs MAP_HEIGHT_PX).
+    const BUILDING_CORNER_SEGMENTS = 6;
+    function generateRoundedBox(cx, cy, width, depth, rotation) {
       const hw = mToLng(width) / 2;
       const hd = mToLat(depth) / 2;
+      const rM = Math.min(width, depth) * 0.22;
+      const rx = Math.min(mToLng(rM), mToLng(6), hw);
+      const ry = Math.min(mToLat(rM), mToLat(6), hd);
       const rad = (rotation * Math.PI) / 180;
       const cos = Math.cos(rad);
       const sin = Math.sin(rad);
-      const corners = [[-hw, hd], [hw, hd], [hw, -hd], [-hw, -hd]];
-      return corners.map(([x, y]) => [
+      const corners = [
+        { cx: hw - rx, cy: hd - ry, a0: 0, a1: Math.PI / 2 },
+        { cx: -(hw - rx), cy: hd - ry, a0: Math.PI / 2, a1: Math.PI },
+        { cx: -(hw - rx), cy: -(hd - ry), a0: Math.PI, a1: 1.5 * Math.PI },
+        { cx: hw - rx, cy: -(hd - ry), a0: 1.5 * Math.PI, a1: 2 * Math.PI },
+      ];
+      const points = [];
+      corners.forEach(({ cx: ccx, cy: ccy, a0, a1 }) => {
+        for (let s = 0; s <= BUILDING_CORNER_SEGMENTS; s++) {
+          const t = a0 + (a1 - a0) * (s / BUILDING_CORNER_SEGMENTS);
+          points.push([ccx + rx * Math.cos(t), ccy + ry * Math.sin(t)]);
+        }
+      });
+      return points.map(([x, y]) => [
         cx + x * cos - y * sin,
-        cy + x * sin + y * cos
+        cy + x * sin + y * cos,
       ]);
     }
 
-    function shapeToGeoJSON(shape) {
-      const coords = generateBox(shape.x, shape.y, shape.width, shape.depth, shape.rotation);
+    function isLineShape(shape) { return shape.type === 'road' || shape.type === 'bridge'; }
+
+    // Buffers a straight segment into a rectangle strip of the given width.
+    // Direction is computed in meter-space (not raw degrees) since lng/lat use
+    // different meters-per-degree divisors in this fictional CRS.
+    function bufferLineToPolygon(points, widthM) {
+      const [p0, p1] = points;
+      const dxM = (p1[0] - p0[0]) * MAP_WIDTH_PX;
+      const dyM = (p1[1] - p0[1]) * MAP_HEIGHT_PX;
+      const len = Math.hypot(dxM, dyM) || 1;
+      const nxM = -dyM / len, nyM = dxM / len; // unit normal, meter-space
+      const hw = widthM / 2;
+      const offLng = (nxM * hw) / MAP_WIDTH_PX;
+      const offLat = (nyM * hw) / MAP_HEIGHT_PX;
+      return [
+        [p0[0] + offLng, p0[1] + offLat],
+        [p1[0] + offLng, p1[1] + offLat],
+        [p1[0] - offLng, p1[1] - offLat],
+        [p0[0] - offLng, p0[1] - offLat],
+      ];
+    }
+
+    function boxFeature(shape, width, depth, base, height, color) {
+      const coords = generateRoundedBox(shape.x, shape.y, width, depth, shape.rotation);
       return {
         type: 'Feature',
         id: shape.id,
         geometry: { type: 'Polygon', coordinates: [[...coords, coords[0]]] },
-        properties: { id: shape.id, name: shape.name, type: shape.type, width: shape.width, depth: shape.depth, height: shape.height, rotation: shape.rotation, locked: shape.locked }
+        properties: { id: shape.id, name: shape.name, type: shape.type, color, base, height, locked: shape.locked }
       };
+    }
+
+    // Buildings taller than this get a stepped/setback silhouette (a narrower
+    // upper tier on top of the full-footprint base) instead of a plain prism —
+    // mirrors the tiered towers in reference Apple/Google Maps 3D renders.
+    const TALL_BUILDING_HEIGHT_M = 60;
+    const TIER_HEIGHT_RATIO = 0.62; // base tier reaches this fraction of total height
+    const TIER_FOOTPRINT_RATIO = 0.62; // upper tier's width/depth vs the base
+
+    function buildingFeatures(shape) {
+      if (shape.height < TALL_BUILDING_HEIGHT_M) {
+        return [boxFeature(shape, shape.width, shape.depth, 0, shape.height, shape.color)];
+      }
+      const baseTierHeight = shape.height * TIER_HEIGHT_RATIO;
+      return [
+        boxFeature(shape, shape.width, shape.depth, 0, baseTierHeight, shape.color),
+        boxFeature(shape, shape.width * TIER_FOOTPRINT_RATIO, shape.depth * TIER_FOOTPRINT_RATIO, baseTierHeight, shape.height, shape.color),
+      ];
+    }
+
+    // A shape can expand into multiple stacked GeoJSON features while
+    // remaining one logical entity — all features share the same
+    // `id`/`properties.id` so selection, dragging, and deletion still
+    // operate on the whole shape.
+    function shapeToFeatures(shape) {
+      if (isLineShape(shape)) {
+        const coords = bufferLineToPolygon(shape.points, shape.widthM);
+        return [{
+          type: 'Feature',
+          id: shape.id,
+          geometry: { type: 'Polygon', coordinates: [[...coords, coords[0]]] },
+          properties: { id: shape.id, name: shape.name, type: shape.type, color: shape.color, base: 0, height: shape.heightM, locked: shape.locked }
+        }];
+      }
+      return buildingFeatures(shape);
     }
 
     // ===== STORAGE =====
     function saveToStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(shapes));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(shapes));
+        document.getElementById('status-line').textContent = 'Saved ' + new Date().toLocaleTimeString();
+      } catch (e) { console.error('[Storage error]', e); }
     }
 
     function loadFromStorage() {
@@ -329,41 +532,139 @@
       } catch (e) { console.error('[Storage error]', e); }
     }
 
+    // ===== SUPABASE =====
+    function rowToShape(row) {
+      if (row.type === 'road' || row.type === 'bridge') {
+        return {
+          id: row.id,
+          name: row.name || row.type,
+          type: row.type,
+          color: row.color || '#3a3a3a',
+          points: row.points || [[row.center_lng, row.center_lat], [row.center_lng, row.center_lat]],
+          widthM: row.width_m,
+          heightM: row.height_m,
+          locked: !!row.locked,
+        };
+      }
+      return {
+        id: row.id,
+        name: row.name || row.type,
+        type: row.type,
+        color: row.color || '#D4A574',
+        x: row.center_lng,
+        y: row.center_lat,
+        width: row.width_m,
+        depth: row.depth_m,
+        height: row.height_m,
+        rotation: row.rotation || 0,
+        locked: !!row.locked,
+      };
+    }
+
+    function shapeToRow(s) {
+      if (isLineShape(s)) {
+        const mid = [(s.points[0][0] + s.points[1][0]) / 2, (s.points[0][1] + s.points[1][1]) / 2];
+        return {
+          id: s.id,
+          name: s.name,
+          type: s.type,
+          center_lng: mid[0],
+          center_lat: mid[1],
+          width_m: s.widthM,
+          depth_m: null,
+          height_m: s.heightM,
+          rotation: 0,
+          color: s.color,
+          locked: s.locked,
+          published: true,
+          points: s.points,
+        };
+      }
+      return {
+        id: s.id,
+        name: s.name,
+        type: s.type,
+        center_lng: s.x,
+        center_lat: s.y,
+        width_m: s.width,
+        depth_m: s.depth,
+        height_m: s.height,
+        rotation: s.rotation,
+        color: s.color,
+        locked: s.locked,
+        published: true,
+        points: null,
+      };
+    }
+
+    async function loadPublishedFromSupabase() {
+      const { data, error } = await supabaseClient.from('map_shapes').select('*').eq('published', true);
+      if (error) { console.error('[SUPABASE LOAD]', error); return; }
+      const existingIds = new Set(shapes.map(s => s.id));
+      let added = false;
+      (data || []).forEach(row => {
+        if (!existingIds.has(row.id)) {
+          shapes.push(rowToShape(row));
+          added = true;
+        }
+      });
+      if (added) { renderShapes(); updateShapeList(); }
+    }
+
+    async function publishToMap() {
+      const btn = document.getElementById('publish-btn');
+      if (shapes.length === 0) return;
+      btn.disabled = true;
+      btn.textContent = 'Publishing…';
+      const rows = shapes.map(shapeToRow);
+      const { error } = await supabaseClient.from('map_shapes').upsert(rows);
+      btn.disabled = false;
+      if (error) {
+        console.error('[SUPABASE PUBLISH]', error);
+        btn.textContent = 'Publish failed';
+        setTimeout(() => { btn.textContent = 'Publish to Map'; }, 2500);
+        return;
+      }
+      btn.textContent = 'Published!';
+      setTimeout(() => { btn.textContent = 'Publish to Map'; }, 2000);
+    }
+
+    document.getElementById('publish-btn').onclick = publishToMap;
+
     // ===== RENDER =====
     function renderShapes() {
-      // Remove old layers/sources
-      ['shapes-fill', 'shapes-line', 'shapes-selected'].forEach(id => {
+      ['shapes-fill', 'shapes-line'].forEach(id => {
         if (map.getLayer(id)) map.removeLayer(id);
       });
       if (map.getSource('shapes-source')) map.removeSource('shapes-source');
 
-      if (shapes.length === 0) return;
+      if (shapes.length === 0) { updateGizmo(); return; }
 
-      // Create GeoJSON
-      const fc = { type: 'FeatureCollection', features: shapes.map(shapeToGeoJSON) };
+      const fc = { type: 'FeatureCollection', features: shapes.flatMap(shapeToFeatures) };
 
       map.addSource('shapes-source', { type: 'geojson', data: fc });
 
-      // Fill extrusion - INSIDE bounds check
       map.addLayer({
         id: 'shapes-fill',
         type: 'fill-extrusion',
         source: 'shapes-source',
-        minzoom: 0, // CRITICAL: override default minzoom 15
+        minzoom: 0,
         paint: {
           'fill-extrusion-color': [
             'case',
             ['==', ['get', 'id'], selectedId || ''],
             '#ffffff',
-            ['get', 'color']
+            ['any', ['==', ['get', 'type'], 'road'], ['==', ['get', 'type'], 'bridge']],
+            ['get', 'color'],
+            APPLE_BUILDING_COLOR
           ],
-          'fill-extrusion-height': ['get', 'height'],
-          'fill-extrusion-base': 0,
-          'fill-extrusion-opacity': 0.85
+          'fill-extrusion-height': ['*', ['get', 'height'], HEIGHT_EXAGGERATION],
+          'fill-extrusion-base': ['*', ['get', 'base'], HEIGHT_EXAGGERATION],
+          'fill-extrusion-vertical-gradient': true,
+          'fill-extrusion-opacity': 0.95
         }
-      }, 'base-map-layer'); // Insert above base map
+      }); // no beforeId: appended above base-map-layer, which is what we want
 
-      // White outline for selected
       map.addLayer({
         id: 'shapes-line',
         type: 'line',
@@ -372,7 +673,29 @@
         filter: ['==', ['get', 'id'], selectedId || ''],
         paint: { 'line-color': '#ffffff', 'line-width': 3, 'line-opacity': 1 }
       });
+
+      updateGizmo();
     }
+
+    document.getElementById('height-exag').oninput = (e) => {
+      HEIGHT_EXAGGERATION = Number(e.target.value);
+      document.getElementById('height-exag-label').textContent = `Height Exaggeration (${HEIGHT_EXAGGERATION}x)`;
+      if (map.getLayer('shapes-fill')) {
+        map.setPaintProperty('shapes-fill', 'fill-extrusion-height', ['*', ['get', 'height'], HEIGHT_EXAGGERATION]);
+      }
+    };
+
+    document.getElementById('raster-opacity').oninput = (e) => {
+      if (map.getLayer('base-map-layer')) {
+        map.setPaintProperty('base-map-layer', 'raster-opacity', Number(e.target.value) / 100);
+      }
+    };
+
+    document.getElementById('real-map-opacity').oninput = (e) => {
+      if (map.getLayer('real-map-layer')) {
+        map.setPaintProperty('real-map-layer', 'raster-opacity', Number(e.target.value) / 100);
+      }
+    };
 
     // ===== MODEL GRID =====
     const modelGrid = document.getElementById('model-grid');
@@ -390,77 +713,183 @@
         document.getElementById('prop-width').value = model.width;
         document.getElementById('prop-depth').value = model.depth;
         document.getElementById('prop-height').value = model.height;
-        document.getElementById('prop-name').value = model.name;
+        document.getElementById('prop-name').value = '';
       };
       modelGrid.appendChild(btn);
     });
 
-    // ===== PROPERTIES =====
+    // ===== PROPERTIES (edit selected) =====
+    // Width/Height stay meaningful for roads & bridges (road width, bridge
+    // elevation) and are repurposed for them; Depth/Rotation are box-only.
     ['prop-width', 'prop-depth', 'prop-height', 'prop-rotation'].forEach(id => {
       document.getElementById(id).oninput = () => {
-        if (selectedId) {
+        if (!selectedId) return;
+        const shape = shapes.find(s => s.id === selectedId);
+        if (!shape || shape.locked) return;
+
+        if (isLineShape(shape)) {
+          if (id === 'prop-width') {
+            const v = parseFloat(document.getElementById('prop-width').value) || shape.widthM;
+            shapes = shapes.map(s => s.id === selectedId ? { ...s, widthM: v } : s);
+          } else if (id === 'prop-height') {
+            const v = parseFloat(document.getElementById('prop-height').value) || shape.heightM;
+            shapes = shapes.map(s => s.id === selectedId ? { ...s, heightM: v } : s);
+          } else {
+            return;
+          }
+        } else {
           shapes = shapes.map(s => s.id === selectedId ? {
             ...s,
-            width: parseFloat(document.getElementById('prop-width').value),
-            depth: parseFloat(document.getElementById('prop-depth').value),
-            height: parseFloat(document.getElementById('prop-height').value),
-            rotation: parseFloat(document.getElementById('prop-rotation').value)
+            width: parseFloat(document.getElementById('prop-width').value) || s.width,
+            depth: parseFloat(document.getElementById('prop-depth').value) || s.depth,
+            height: parseFloat(document.getElementById('prop-height').value) || s.height,
+            rotation: parseFloat(document.getElementById('prop-rotation').value) || 0
           } : s);
-          renderShapes();
-          saveToStorage();
-          updateShapeList();
         }
+        renderShapes();
+        saveToStorage();
+        updateShapeList();
       };
     });
 
     // ===== PLACE =====
     let isPlaceMode = false;
     document.getElementById('place-btn').onclick = () => {
+      cancelRoadPlacement();
       isPlaceMode = !isPlaceMode;
-      document.getElementById('place-btn').textContent = isPlaceMode ? 'Cancel' : 'Place Model';
+      document.getElementById('place-btn').textContent = isPlaceMode ? 'Cancel' : 'Place Building';
       document.getElementById('place-btn').className = isPlaceMode ? 'btn btn-danger btn-full' : 'btn btn-primary btn-full';
       updateModeIndicator();
     };
 
-    map.on('click', e => {
-      if (!isPlaceMode) return;
+    // ===== ROADS / BRIDGES =====
+    function updateRoadButtons() {
+      const roadBtn = document.getElementById('place-road-btn');
+      const bridgeBtn = document.getElementById('place-bridge-btn');
+      roadBtn.textContent = isPlacingRoad === 'road' ? (roadStartPoint ? 'Click end point…' : 'Cancel') : 'Place Road';
+      roadBtn.className = isPlacingRoad === 'road' ? 'btn btn-danger btn-full' : 'btn btn-full';
+      if (isPlacingRoad !== 'road') roadBtn.style.background = 'rgba(255,255,255,0.1)';
+      bridgeBtn.textContent = isPlacingRoad === 'bridge' ? (roadStartPoint ? 'Click end point…' : 'Cancel') : 'Place Bridge';
+      bridgeBtn.className = isPlacingRoad === 'bridge' ? 'btn btn-danger btn-full' : 'btn btn-full';
+      if (isPlacingRoad !== 'bridge') bridgeBtn.style.background = 'rgba(255,255,255,0.1)';
+    }
 
-      // Check if click is within LEONIDA_BOUNDS
-      const lng = e.lngLat.lng;
-      const lat = e.lngLat.lat;
-      if (lng < BOUNDS.west || lng > BOUNDS.east || lat < BOUNDS.south || lat > BOUNDS.north) {
-        alert('Click inside the map bounds!');
+    function cancelRoadPlacement() {
+      isPlacingRoad = null;
+      roadStartPoint = null;
+      clearRoadPreview();
+      updateRoadButtons();
+    }
+
+    function togglePlacingRoad(kind) {
+      if (isPlacingRoad === kind) {
+        cancelRoadPlacement();
+        return;
+      }
+      isPlaceMode = false;
+      document.getElementById('place-btn').textContent = 'Place Building';
+      document.getElementById('place-btn').className = 'btn btn-primary btn-full';
+      isPlacingRoad = kind;
+      roadStartPoint = null;
+      updateRoadButtons();
+      updateModeIndicator();
+      updateGizmo();
+    }
+
+    document.getElementById('place-road-btn').onclick = () => togglePlacingRoad('road');
+    document.getElementById('place-bridge-btn').onclick = () => togglePlacingRoad('bridge');
+
+    function clearRoadPreview() {
+      if (map.getLayer('road-preview-line')) map.removeLayer('road-preview-line');
+      if (map.getSource('road-preview-source')) map.removeSource('road-preview-source');
+    }
+
+    function updateRoadPreview(from, to) {
+      const data = { type: 'Feature', geometry: { type: 'LineString', coordinates: [from, to] }, properties: {} };
+      const src = map.getSource('road-preview-source');
+      if (src) { src.setData(data); return; }
+      map.addSource('road-preview-source', { type: 'geojson', data });
+      map.addLayer({
+        id: 'road-preview-line',
+        type: 'line',
+        source: 'road-preview-source',
+        paint: { 'line-color': '#ffffff', 'line-width': 2, 'line-dasharray': [2, 2] },
+      });
+    }
+
+    // ===== PLACE + SELECT (single handler — two separate listeners on the
+    // same click raced: the select listener would query the fill layer just
+    // added by the place listener before the GPU had rendered a frame with
+    // it, find nothing, and immediately deselect the shape just placed) =====
+    map.on('click', e => {
+      if (isPlacingRoad) {
+        const pt = [e.lngLat.lng, e.lngLat.lat];
+        if (!roadStartPoint) {
+          roadStartPoint = pt;
+          updateRoadButtons();
+          updateModeIndicator();
+        } else {
+          const isBridge = isPlacingRoad === 'bridge';
+          const newShape = {
+            id: crypto.randomUUID(),
+            name: `${isBridge ? 'Bridge' : 'Road'} ${Date.now() % 10000}`,
+            type: isPlacingRoad,
+            color: isBridge ? '#B8B8B8' : '#3a3a3a',
+            points: [roadStartPoint, pt],
+            widthM: isBridge ? 10 : 8,
+            heightM: isBridge ? 4 : 0,
+            locked: false,
+          };
+          pushUndo();
+          shapes.push(newShape);
+          selectedId = newShape.id;
+          cancelRoadPlacement();
+          renderShapes();
+          saveToStorage();
+          updateShapeList();
+          updatePropertiesPanel();
+          updateModeIndicator();
+        }
         return;
       }
 
-      const newShape = {
-        id: crypto.randomUUID(),
-        name: document.getElementById('prop-name').value || activeModel.name,
-        type: activeModel.id,
-        color: MODEL_COLORS[activeModel.id] || '#D4A574',
-        x: lng,
-        y: lat,
-        width: parseFloat(document.getElementById('prop-width').value),
-        depth: parseFloat(document.getElementById('prop-depth').value),
-        height: parseFloat(document.getElementById('prop-height').value),
-        rotation: parseFloat(document.getElementById('prop-rotation').value),
-        locked: false
-      };
-      shapes.push(newShape);
-      selectedId = newShape.id;
-      renderShapes();
-      saveToStorage();
-      updateShapeList();
-      isPlaceMode = false;
-      document.getElementById('place-btn').textContent = 'Place Model';
-      document.getElementById('place-btn').className = 'btn btn-primary btn-full';
-      updateModeIndicator();
-      map.flyTo({ pitch: 0, duration: 300 });
-    });
+      if (isPlaceMode) {
+        const lng = e.lngLat.lng;
+        const lat = e.lngLat.lat;
+        if (lng < BOUNDS.west || lng > BOUNDS.east || lat < BOUNDS.south || lat > BOUNDS.north) {
+          alert('Click inside the map bounds!');
+          return;
+        }
 
-    // ===== SELECT =====
-    map.on('click', e => {
-      if (isPlaceMode) return;
+        const newShape = {
+          id: crypto.randomUUID(),
+          name: document.getElementById('prop-name').value || `${activeModel.name} ${Date.now() % 10000}`,
+          type: activeModel.id,
+          color: activeModel.color,
+          x: lng,
+          y: lat,
+          width: parseFloat(document.getElementById('prop-width').value) || activeModel.width,
+          depth: parseFloat(document.getElementById('prop-depth').value) || activeModel.depth,
+          height: parseFloat(document.getElementById('prop-height').value) || activeModel.height,
+          rotation: parseFloat(document.getElementById('prop-rotation').value) || 0,
+          locked: false
+        };
+        pushUndo();
+        shapes.push(newShape);
+        selectedId = newShape.id;
+        renderShapes();
+        saveToStorage();
+        updateShapeList();
+        updatePropertiesPanel();
+        isPlaceMode = false;
+        document.getElementById('place-btn').textContent = 'Place Building';
+        document.getElementById('place-btn').className = 'btn btn-primary btn-full';
+        updateModeIndicator();
+        map.flyTo({ pitch: 0, duration: 300 });
+        return;
+      }
+
+      if (!map.getLayer('shapes-fill')) return;
       const features = map.queryRenderedFeatures(e.point, { layers: ['shapes-fill'] });
       if (features.length > 0) {
         const id = features[0].properties.id;
@@ -481,13 +910,16 @@
       }
     });
 
-    // ===== DRAG TO MOVE =====
+    // ===== DRAG TO MOVE (whole body, top-down only, buildings only —
+    // roads/bridges don't have a single x/y; delete and redraw instead) =====
     map.on('mousedown', e => {
-      if (map.getPitch() > 5) return; // Only in top-down view
+      if (map.getPitch() > 5 || isPlaceMode || isPlacingRoad) return;
+      if (!map.getLayer('shapes-fill')) return;
       const features = map.queryRenderedFeatures(e.point, { layers: ['shapes-fill'] });
       if (features.length > 0) {
         const shape = shapes.find(s => s.id === features[0].properties.id);
-        if (shape && !shape.locked) {
+        if (shape && !shape.locked && !isLineShape(shape)) {
+          pushUndo();
           isDragging = true;
           dragStart = { x: e.lngLat.lng, y: e.lngLat.lat, shapeX: shape.x, shapeY: shape.y, shapeId: shape.id };
           map.dragPan.disable();
@@ -519,11 +951,19 @@
     document.addEventListener('keydown', e => {
       if (e.target.tagName === 'INPUT') return;
 
+      // Undo: Cmd/Ctrl+Z (standard) and Alt+Z (as requested)
+      if ((e.key === 'z' || e.key === 'Z') && (e.metaKey || e.ctrlKey || e.altKey)) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+
       if (e.key === 'Escape') {
         selectedId = null;
         isPlaceMode = false;
-        document.getElementById('place-btn').textContent = 'Place Model';
+        document.getElementById('place-btn').textContent = 'Place Building';
         document.getElementById('place-btn').className = 'btn btn-primary btn-full';
+        cancelRoadPlacement();
         renderShapes();
         updateShapeList();
         updateModeIndicator();
@@ -540,7 +980,6 @@
         }
       }
 
-      // Arrow keys nudge
       if (selectedId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
         const shape = shapes.find(s => s.id === selectedId);
         if (shape && !shape.locked) {
@@ -550,7 +989,11 @@
           if (e.key === 'ArrowRight') dx = mToLng(step);
           if (e.key === 'ArrowUp') dy = mToLat(step);
           if (e.key === 'ArrowDown') dy = -mToLat(step);
-          shapes = shapes.map(s => s.id === selectedId ? { ...s, x: s.x + dx, y: s.y + dy } : s);
+          shapes = shapes.map(s => {
+            if (s.id !== selectedId) return s;
+            if (isLineShape(s)) return { ...s, points: s.points.map(p => [p[0] + dx, p[1] + dy]) };
+            return { ...s, x: s.x + dx, y: s.y + dy };
+          });
           renderShapes();
           saveToStorage();
           updateShapeList();
@@ -561,6 +1004,9 @@
     // ===== COORDS =====
     map.on('mousemove', e => {
       document.getElementById('coords').textContent = `X: ${e.lngLat.lng.toFixed(4)} Y: ${e.lngLat.lat.toFixed(4)}`;
+      if (isPlacingRoad && roadStartPoint) {
+        updateRoadPreview(roadStartPoint, [e.lngLat.lng, e.lngLat.lat]);
+      }
     });
 
     // ===== VIEW CONTROLS =====
@@ -589,11 +1035,15 @@
       shapes.forEach(shape => {
         const item = document.createElement('div');
         item.className = 'shape-item' + (shape.id === selectedId ? ' selected' : '');
+        const line = isLineShape(shape);
+        const detail = line
+          ? `${Math.round(Math.hypot((shape.points[1][0] - shape.points[0][0]) * MAP_WIDTH_PX, (shape.points[1][1] - shape.points[0][1]) * MAP_HEIGHT_PX))}m long, ${shape.widthM}m wide`
+          : `${shape.width}×${shape.depth}×${shape.height}m`;
         item.innerHTML = `
           <div class="shape-color" style="background: ${shape.color}"></div>
           <div class="shape-info">
             <div class="shape-name">${shape.name}</div>
-            <div class="shape-type">${shape.width}×${shape.depth}×${shape.height}m</div>
+            <div class="shape-type">${detail}</div>
           </div>
           <div class="shape-actions">
             <button class="shape-action ${shape.locked ? 'locked' : ''}" data-action="lock">🔒</button>
@@ -608,7 +1058,10 @@
             saveToStorage();
             updateShapeList();
           } else if (action === 'fly') {
-            map.flyTo({ center: [shape.x, shape.y], zoom: 15, pitch: 45, duration: 1000 });
+            const center = line
+              ? [(shape.points[0][0] + shape.points[1][0]) / 2, (shape.points[0][1] + shape.points[1][1]) / 2]
+              : [shape.x, shape.y];
+            map.flyTo({ center, zoom: 15, pitch: 45, duration: 1000 });
           } else if (action === 'delete') {
             if (!shape.locked) {
               shapes = shapes.filter(s => s.id !== shape.id);
@@ -631,18 +1084,25 @@
 
     function updatePropertiesPanel() {
       const shape = shapes.find(s => s.id === selectedId);
-      if (shape) {
-        document.getElementById('prop-name').value = shape.name;
-        document.getElementById('prop-width').value = shape.width;
-        document.getElementById('prop-depth').value = shape.depth;
-        document.getElementById('prop-height').value = shape.height;
-        document.getElementById('prop-rotation').value = shape.rotation;
-      }
+      if (!shape) return;
+      document.getElementById('prop-name').value = shape.name;
+      const line = isLineShape(shape);
+      document.getElementById('prop-width').value = line ? shape.widthM : shape.width;
+      document.getElementById('prop-depth').value = line ? '' : shape.depth;
+      document.getElementById('prop-height').value = line ? shape.heightM : shape.height;
+      document.getElementById('prop-rotation').value = line ? '' : shape.rotation;
+      document.getElementById('prop-depth').disabled = line;
+      document.getElementById('prop-rotation').disabled = line;
     }
 
     function updateModeIndicator() {
       const indicator = document.getElementById('mode-indicator');
-      if (isPlaceMode) {
+      if (isPlacingRoad) {
+        indicator.textContent = roadStartPoint
+          ? `Click the ${isPlacingRoad} end point`
+          : `Click the ${isPlacingRoad} start point`;
+        indicator.className = 'mode-indicator mode-place';
+      } else if (isPlaceMode) {
         indicator.textContent = `Place: ${activeModel.name}`;
         indicator.className = 'mode-indicator mode-place';
       } else if (isDragging) {
@@ -658,9 +1118,142 @@
       }
     }
 
+    // ===== GIZMO (Roblox-style scale / rotate / height handles) =====
+    // Only shown for box-shaped (building) shapes — roads/bridges are lines, not boxes.
+    const gizmoEl = document.getElementById('gizmo');
+    const ROTATE_OFFSET = 56;
+    const HEIGHT_OFFSET = 46;
+
+    function place(el, worldPoint, centerPx, extraPx) {
+      const px = map.project(worldPoint);
+      let x = px.x, y = px.y;
+      if (extraPx) {
+        const dx = px.x - centerPx.x, dy = px.y - centerPx.y;
+        const len = Math.hypot(dx, dy) || 1;
+        x += (dx / len) * extraPx;
+        y += (dy / len) * extraPx;
+      }
+      el.style.transform = `translate(${x}px, ${y}px)`;
+    }
+
+    function updateGizmo() {
+      const shape = shapes.find(s => s.id === selectedId);
+      const isBox = shape && shape.type !== 'road' && shape.type !== 'bridge';
+      if (!isBox || shape.locked || isPlaceMode || isPlacingRoad) {
+        gizmoEl.style.display = 'none';
+        return;
+      }
+      gizmoEl.style.display = 'block';
+
+      const center = [shape.x, shape.y];
+      const centerPx = map.project(center);
+      const hw = shape.width / 2, hd = shape.depth / 2;
+
+      place(document.getElementById('h-resize-right'), boxPoint(center, shape.rotation, hw, 0), centerPx);
+      place(document.getElementById('h-resize-left'), boxPoint(center, shape.rotation, -hw, 0), centerPx);
+      place(document.getElementById('h-resize-top'), boxPoint(center, shape.rotation, 0, hd), centerPx);
+      place(document.getElementById('h-resize-bottom'), boxPoint(center, shape.rotation, 0, -hd), centerPx);
+
+      place(document.getElementById('h-rotate'), boxPoint(center, shape.rotation, 0, hd), centerPx, ROTATE_OFFSET);
+
+      const heightEl = document.getElementById('h-height');
+      heightEl.style.transform = `translate(${centerPx.x}px, ${centerPx.y - HEIGHT_OFFSET}px)`;
+    }
+
+    function startHandleDrag(handleId, onMove) {
+      document.getElementById(handleId).addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const shape = shapes.find(s => s.id === selectedId);
+        if (!shape || shape.locked) return;
+        const shapeStart = { ...shape };
+        pushUndo();
+        map.dragPan.disable();
+
+        const move = (ev) => {
+          const rect = map.getContainer().getBoundingClientRect();
+          const point = map.unproject([ev.clientX - rect.left, ev.clientY - rect.top]);
+          const patch = onMove([point.lng, point.lat], shapeStart);
+          shapes = shapes.map(s => s.id === shapeStart.id ? { ...s, ...patch } : s);
+          renderShapes();
+        };
+        const up = () => {
+          map.dragPan.enable();
+          window.removeEventListener('pointermove', move);
+          window.removeEventListener('pointerup', up);
+          saveToStorage();
+          updateShapeList();
+          updatePropertiesPanel();
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+      });
+    }
+
+    function computeResize(axis, sign, mouseWorld, s) {
+      if (axis === 'x') {
+        const fixed = boxPoint(s.center, s.rotation, -sign * (s.width / 2), 0);
+        const [fdLng, fdLat] = [mouseWorld[0] - fixed[0], mouseWorld[1] - fixed[1]];
+        const [flx] = toLocalDelta(fdLng, fdLat, s.rotation);
+        const newWidth = Math.max(1, Math.round(sign * flx * MAP_WIDTH_PX));
+        const newCenter = boxPoint(fixed, s.rotation, (sign * newWidth) / 2, 0);
+        return { width: newWidth, x: newCenter[0], y: newCenter[1] };
+      }
+      const fixed = boxPoint(s.center, s.rotation, 0, -sign * (s.depth / 2));
+      const [fdLng, fdLat] = [mouseWorld[0] - fixed[0], mouseWorld[1] - fixed[1]];
+      const [, fly] = toLocalDelta(fdLng, fdLat, s.rotation);
+      const newDepth = Math.max(1, Math.round(sign * fly * MAP_HEIGHT_PX));
+      const newCenter = boxPoint(fixed, s.rotation, 0, (sign * newDepth) / 2);
+      return { depth: newDepth, x: newCenter[0], y: newCenter[1] };
+    }
+
+    // shapeStart passed to handlers needs a `.center` alias for boxPoint() reuse
+    function withCenter(s) { return { ...s, center: [s.x, s.y] }; }
+
+    startHandleDrag('h-resize-right', (mw, s) => computeResize('x', 1, mw, withCenter(s)));
+    startHandleDrag('h-resize-left', (mw, s) => computeResize('x', -1, mw, withCenter(s)));
+    startHandleDrag('h-resize-top', (mw, s) => computeResize('y', 1, mw, withCenter(s)));
+    startHandleDrag('h-resize-bottom', (mw, s) => computeResize('y', -1, mw, withCenter(s)));
+
+    startHandleDrag('h-rotate', (mw, s) => {
+      const [dLng, dLat] = [mw[0] - s.x, mw[1] - s.y];
+      const angle = (Math.atan2(dLat, dLng) * 180) / Math.PI - 90;
+      const normalized = ((angle % 360) + 360) % 360;
+      return { rotation: Math.round(normalized) };
+    });
+
+    document.getElementById('h-height').addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const shape = shapes.find(s => s.id === selectedId);
+      if (!shape || shape.locked) return;
+      const startY = e.clientY;
+      const startHeight = shape.height;
+      const id = shape.id;
+      pushUndo();
+      map.dragPan.disable();
+
+      const move = (ev) => {
+        const deltaPx = startY - ev.clientY;
+        const newHeight = Math.max(1, Math.round(startHeight + deltaPx));
+        shapes = shapes.map(s => s.id === id ? { ...s, height: newHeight } : s);
+        renderShapes();
+      };
+      const up = () => {
+        map.dragPan.enable();
+        window.removeEventListener('pointermove', move);
+        window.removeEventListener('pointerup', up);
+        saveToStorage();
+        updateShapeList();
+        updatePropertiesPanel();
+      };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    });
+
     // ===== EXPORT =====
     document.getElementById('copy-btn').onclick = () => {
-      const fc = { type: 'FeatureCollection', features: shapes.map(shapeToGeoJSON) };
+      const fc = { type: 'FeatureCollection', features: shapes.flatMap(shapeToFeatures) };
       navigator.clipboard.writeText(JSON.stringify(fc, null, 2));
       const btn = document.getElementById('copy-btn');
       btn.textContent = 'Copied!';
@@ -668,7 +1261,7 @@
     };
 
     document.getElementById('download-btn').onclick = () => {
-      const fc = { type: 'FeatureCollection', features: shapes.map(shapeToGeoJSON) };
+      const fc = { type: 'FeatureCollection', features: shapes.flatMap(shapeToFeatures) };
       const blob = new Blob([JSON.stringify(fc, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
